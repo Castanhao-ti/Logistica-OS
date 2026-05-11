@@ -54,6 +54,11 @@ PARTIALS = [
         "label": "Parcial 17:35",
         "path": Path(r"C:\Users\Rodolfo\Downloads\Relatorio (13).pdf"),
     },
+    {
+        "id": "parcial-2026-05-11-1105",
+        "label": "Parcial Final 11:05",
+        "path": Path(r"C:\Users\Rodolfo\Downloads\Relatorio (14).pdf"),
+    },
 ]
 
 
