@@ -200,6 +200,7 @@ function App() {
         <div>
           <span className="eyebrow">Logistica OS</span>
           <h1>Inventario logistico</h1>
+          <span className="signature">Criado e desenvolvido por Rodolfo Almeida</span>
           <p>
             Parcial atual: <strong>{data.metadata.currentPartial.label}</strong> ({data.metadata.currentPartial.timestamp})
           </p>

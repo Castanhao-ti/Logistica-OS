@@ -55,6 +55,14 @@ h1 {
   letter-spacing: 0;
 }
 
+.signature {
+  display: inline-block;
+  margin-top: 8px;
+  color: #287a67;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .topbar p {
   margin-top: 8px;
   color: #52605c;
