@@ -592,7 +592,7 @@ function FinalInventoryPage({ finalInventory }: { finalInventory: FinalInventory
                 <th className="num">Contado</th>
                 <th className="num">Ajuste</th>
                 <th className="num">Valor</th>
-                <th>Status / Observacao</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -610,8 +610,7 @@ function FinalInventoryPage({ finalInventory }: { finalInventory: FinalInventory
                   <td className={`num ${product.ajuste < 0 ? "negative" : product.ajuste > 0 ? "positive" : ""}`}>{fmt(product.ajuste)}</td>
                   <td className={`num ${product.valorAjuste < 0 ? "negative" : product.valorAjuste > 0 ? "positive" : ""}`}>{money(product.valorAjuste)}</td>
                   <td>
-                    <strong>{product.status || product.ajusteFlavia || "-"}</strong>
-                    {product.status && product.ajusteFlavia && <span>{product.ajusteFlavia}</span>}
+                    <strong>{product.status || "-"}</strong>
                   </td>
                 </tr>
               ))}
