@@ -36,7 +36,7 @@ export default function OperacaoPanel({ onCountChange }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [filters, setFilters] = useState<Filters>({
-    search: '', city: '', bairro: '', minValue: '', maxValue: '', carrierId: '', unit: '',
+    search: '', city: '', bairro: '', minValue: '', maxValue: '', carrierId: '', unit: '', nfCarrier: '', tracking: '',
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -63,6 +63,7 @@ export default function OperacaoPanel({ onCountChange }: Props) {
   useEffect(() => {
     setLoading(true);
     setSelected(new Set());
+    setFilters(f => ({ ...f, carrierId: '', unit: '', nfCarrier: '', tracking: '' }));
     loadData();
     const id = setInterval(loadData, 30_000);
     return () => clearInterval(id);
@@ -81,13 +82,31 @@ export default function OperacaoPanel({ onCountChange }: Props) {
       if (filters.bairro && !(o.bairro ?? '').toLowerCase().includes(filters.bairro.toLowerCase())) return false;
       if (min !== null && o.valor_pedido < min) return false;
       if (max !== null && o.valor_pedido > max) return false;
-      if (filters.carrierId &&
-          o.suggested_carrier_id !== filters.carrierId &&
-          o.assigned_carrier_id !== filters.carrierId) return false;
-      if (filters.unit && o.viamex_unit !== filters.unit) return false;
+      if (tab === 'invoices') {
+        if (filters.nfCarrier && (o.nome_transportadora_nf ?? '') !== filters.nfCarrier) return false;
+        if (filters.tracking === '__none__') {
+          if (o.ultima_ocorrencia_status) return false;
+        } else if (filters.tracking && o.ultima_ocorrencia_status !== filters.tracking) {
+          return false;
+        }
+      } else {
+        if (filters.carrierId &&
+            o.suggested_carrier_id !== filters.carrierId &&
+            o.assigned_carrier_id !== filters.carrierId) return false;
+        if (filters.unit && o.viamex_unit !== filters.unit) return false;
+      }
       return true;
     });
-  }, [orders, filters]);
+  }, [orders, filters, tab]);
+
+  const nfCarriers = useMemo(
+    () => Array.from(new Set(orders.map(o => o.nome_transportadora_nf).filter((c): c is string => Boolean(c)))).sort(),
+    [orders]
+  );
+  const trackingStatuses = useMemo(
+    () => Array.from(new Set(orders.map(o => o.ultima_ocorrencia_status).filter((t): t is string => Boolean(t)))).sort(),
+    [orders]
+  );
 
   const pendingCount = useMemo(
     () => orders.filter(o => o.routing_status !== 'approved' && o.routing_status !== 'in_load').length,
@@ -157,7 +176,7 @@ export default function OperacaoPanel({ onCountChange }: Props) {
     setRefreshing(false);
   };
 
-  const clearFilters = () => setFilters({ search: '', city: '', bairro: '', minValue: '', maxValue: '', carrierId: '', unit: '' });
+  const clearFilters = () => setFilters({ search: '', city: '', bairro: '', minValue: '', maxValue: '', carrierId: '', unit: '', nfCarrier: '', tracking: '' });
   const hasFilters = Object.values(filters).some(Boolean);
 
   return (
@@ -223,22 +242,46 @@ export default function OperacaoPanel({ onCountChange }: Props) {
           value={filters.maxValue}
           onChange={e => setFilters(f => ({ ...f, maxValue: e.target.value }))}
         />
-        <select
-          className="tms-select"
-          value={filters.carrierId}
-          onChange={e => setFilters(f => ({ ...f, carrierId: e.target.value }))}
-        >
-          <option value="">Todas transportadoras</option>
-          {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <select
-          className="tms-select"
-          value={filters.unit}
-          onChange={e => setFilters(f => ({ ...f, unit: e.target.value }))}
-        >
-          <option value="">Todas unidades (Viamex)</option>
-          {VIAMEX_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-        </select>
+        {tab === 'invoices' ? (
+          <>
+            <select
+              className="tms-select"
+              value={filters.nfCarrier}
+              onChange={e => setFilters(f => ({ ...f, nfCarrier: e.target.value }))}
+            >
+              <option value="">Todas transportadoras (NF)</option>
+              {nfCarriers.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select
+              className="tms-select"
+              value={filters.tracking}
+              onChange={e => setFilters(f => ({ ...f, tracking: e.target.value }))}
+            >
+              <option value="">Todo rastreamento</option>
+              <option value="__none__">Sem rastreio</option>
+              {trackingStatuses.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </>
+        ) : (
+          <>
+            <select
+              className="tms-select"
+              value={filters.carrierId}
+              onChange={e => setFilters(f => ({ ...f, carrierId: e.target.value }))}
+            >
+              <option value="">Todas transportadoras</option>
+              {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select
+              className="tms-select"
+              value={filters.unit}
+              onChange={e => setFilters(f => ({ ...f, unit: e.target.value }))}
+            >
+              <option value="">Todas unidades (Viamex)</option>
+              {VIAMEX_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+            </select>
+          </>
+        )}
         {hasFilters && (
           <button className="tms-filters__clear" onClick={clearFilters}>✕ Limpar</button>
         )}

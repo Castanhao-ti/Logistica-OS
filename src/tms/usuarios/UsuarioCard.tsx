@@ -14,17 +14,23 @@ type Confirmacao = 'deletar' | 'desativar' | 'resetar_senha' | null;
 export function UsuarioCard({ usuario, onRefresh }: Props) {
   const [editOpen,    setEditOpen]    = useState(false);
   const [confirmacao, setConfirmacao] = useState<Confirmacao>(null);
+  const [novaSenha,   setNovaSenha]   = useState('');
   const [loading,     setLoading]     = useState(false);
   const [erroInline,  setErroInline]  = useState<string | null>(null);
 
   const executarAcao = async () => {
+    if (confirmacao === 'resetar_senha' && novaSenha.length < 8) {
+      setErroInline('A nova senha precisa ter no mínimo 8 caracteres.');
+      return;
+    }
     setLoading(true);
     setErroInline(null);
     try {
       if (confirmacao === 'deletar')        await deletarUsuario(usuario.id);
       else if (confirmacao === 'desativar') await atualizarUsuario(usuario.id, { ativo: !usuario.ativo });
-      else if (confirmacao === 'resetar_senha') await resetarSenha(usuario.email);
+      else if (confirmacao === 'resetar_senha') await resetarSenha(usuario.email, novaSenha);
       setConfirmacao(null);
+      setNovaSenha('');
       onRefresh();
     } catch (e) {
       setErroInline((e as Error).message);
@@ -52,9 +58,9 @@ export function UsuarioCard({ usuario, onRefresh }: Props) {
       btnClass:  usuario.ativo ? 'usr-btn usr-btn--warning' : 'usr-btn usr-btn--primary',
     },
     resetar_senha: {
-      titulo:    'Resetar senha?',
-      descricao: `Um e-mail de redefinição será enviado para ${usuario.email}.`,
-      botao:     'Enviar e-mail',
+      titulo:    'Redefinir senha',
+      descricao: `Defina a nova senha de acesso de ${usuario.nome} e informe a ele com segurança.`,
+      botao:     'Salvar nova senha',
       btnClass:  'usr-btn usr-btn--primary',
     },
   };
@@ -117,6 +123,21 @@ export function UsuarioCard({ usuario, onRefresh }: Props) {
             </p>
             <p className="usr-confirm__desc">{CONFIGS[confirmacao].descricao}</p>
 
+            {confirmacao === 'resetar_senha' && (
+              <div className="usr-field" style={{ marginTop: 12 }}>
+                <label className="usr-field__label">Nova senha</label>
+                <input
+                  className="usr-input"
+                  type="password"
+                  placeholder="Mínimo 8 caracteres"
+                  value={novaSenha}
+                  onChange={e => setNovaSenha(e.target.value)}
+                  disabled={loading}
+                  autoFocus
+                />
+              </div>
+            )}
+
             {erroInline && (
               <div className="usr-error-box" style={{ marginTop: 12 }}>{erroInline}</div>
             )}
@@ -124,7 +145,7 @@ export function UsuarioCard({ usuario, onRefresh }: Props) {
             <div className="usr-modal__footer">
               <button
                 className="usr-btn usr-btn--secondary"
-                onClick={() => { setConfirmacao(null); setErroInline(null); }}
+                onClick={() => { setConfirmacao(null); setErroInline(null); setNovaSenha(''); }}
                 disabled={loading}
               >
                 Cancelar

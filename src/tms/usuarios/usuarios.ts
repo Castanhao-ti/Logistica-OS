@@ -79,9 +79,10 @@ export async function deletarUsuario(id: string): Promise<void> {
   });
 }
 
-export async function resetarSenha(email: string): Promise<void> {
-  await request('/tms-usuarios-reset-senha', {
+export async function resetarSenha(email: string, novaSenha: string): Promise<void> {
+  const res = await request<{ ok: boolean }>('/tms-usuarios-reset-senha', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, nova_senha: novaSenha }),
   });
+  if (!res.ok) throw new Error('Usuário não encontrado.');
 }

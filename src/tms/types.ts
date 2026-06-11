@@ -95,4 +95,6 @@ export interface Filters {
   maxValue: string;
   carrierId: string;
   unit: string;
+  nfCarrier: string;
+  tracking: string;
 }

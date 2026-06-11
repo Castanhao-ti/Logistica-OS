@@ -4,26 +4,52 @@ import OperacaoPanel from './pages/OperacaoPanel';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import Sidebar, { type View } from './components/Sidebar';
 import Topbar from './components/Topbar';
+import LoginPage from './auth/LoginPage';
+import { getSession, clearSession, type SessionUser } from './auth/auth';
 import './tms.css';
 
 export default function App() {
+  const [user, setUser] = useState<SessionUser | null>(() => getSession());
   const [view, setView] = useState<View>('tms');
   const [pendingCount, setPendingCount] = useState(0);
+
+  if (!user) {
+    return (
+      <div className="tms-root">
+        <LoginPage onLogin={u => { setUser(u); setView('tms'); }} />
+      </div>
+    );
+  }
+
+  const isAdmin = user.perfil === 'admin';
+  const activeView: View = !isAdmin && view !== 'tms' ? 'tms' : view;
+
+  const handleLogout = () => {
+    clearSession();
+    setUser(null);
+    setView('tms');
+  };
 
   return (
     <div className="tms-root">
       <div className="lsw-shell">
-        <Sidebar view={view} onChange={setView} pendingCount={pendingCount} />
+        <Sidebar
+          view={activeView}
+          onChange={setView}
+          pendingCount={pendingCount}
+          user={user}
+          onLogout={handleLogout}
+        />
 
         <main className="lsw-main">
           <Topbar
-            title={view === 'admin' ? 'Configurações Admin' : undefined}
-            subtitle={view === 'admin' ? 'Regras de roteirização, exceções de CEP e tabelas de frete.' : undefined}
+            title={activeView === 'admin' ? 'Configurações Admin' : undefined}
+            subtitle={activeView === 'admin' ? 'Regras de roteirização, exceções de CEP e tabelas de frete.' : undefined}
           />
           <div className="lsw-content">
-            {view === 'tms'      && <OperacaoPanel onCountChange={setPendingCount} />}
-            {view === 'usuarios' && <UsuariosPage />}
-            {view === 'admin' && (
+            {activeView === 'tms'      && <OperacaoPanel onCountChange={setPendingCount} />}
+            {activeView === 'usuarios' && isAdmin && <UsuariosPage />}
+            {activeView === 'admin' && isAdmin && (
               <div className="lsw-empty-state">
                 <div className="lsw-empty-state__icon">
                   <Settings size={24} />
