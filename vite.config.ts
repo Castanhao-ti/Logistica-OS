@@ -7,8 +7,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, "index.html"),
-        tms: resolve(__dirname, "tms.html"),
+        tms: resolve(__dirname, "index.html"),
+        inventario: resolve(__dirname, "inventario.html"),
       },
     },
   },
