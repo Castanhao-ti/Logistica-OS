@@ -1,0 +1,118 @@
+import React from 'react';
+import type { Order } from '../types';
+
+const fmt = (v: number | null) =>
+  v != null ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v) : '—';
+const fmtPct = (v: number | null) =>
+  v != null ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(v)}%` : '—';
+const fmtW = (v: number | null) =>
+  v != null ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(v)} kg` : '—';
+const fmtDate = (v: string | null) =>
+  v ? new Date(v).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—';
+const fmtDateTime = (v: string | null) =>
+  v ? new Date(v).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+
+function statusTone(status: string | null): string {
+  if (!status) return 'tms-badge--pending';
+  const s = status.toLowerCase();
+  if (s.includes('cancel') || s.includes('extrav') || s.includes('avari') || s.includes('denegad')) return 'tms-badge--alert';
+  if (s.includes('autoriz') || s.includes('entreg') || s.includes('realizad') || s.includes('conclu') || s.includes('fatur')) return 'tms-badge--approved';
+  return 'tms-badge--pending';
+}
+
+function StatusBadge({ status, fallback }: { status: string | null; fallback: string }) {
+  return <span className={`tms-badge ${statusTone(status)}`}>{status ?? fallback}</span>;
+}
+
+interface Props {
+  orders: Order[];
+}
+
+export default function NotasFiscaisTable({ orders }: Props) {
+  return (
+    <table className="tms-table">
+      <thead>
+        <tr>
+          <th>Nº Pedido</th>
+          <th>Cliente</th>
+          <th>NF</th>
+          <th>Status NF</th>
+          <th>Valor NF</th>
+          <th>Ruptura</th>
+          <th>Transportadora / Motorista</th>
+          <th>CTe</th>
+          <th>Status Pedido</th>
+          <th>Rastreamento</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orders.map(order => {
+          const hasRuptura = (order.perc_ruptura_valor ?? 0) > 0 || (order.perc_ruptura_qtde ?? 0) > 0;
+
+          return (
+            <tr key={order.id}>
+              <td>
+                <span className="tms-cell-mono">{order.pedido_forca_venda_key}</span>
+              </td>
+              <td>
+                <span className="tms-cell-cliente" title={order.nome_razao_cliente}>
+                  {order.nome_razao_cliente}
+                </span>
+              </td>
+              <td>
+                <span className="tms-cell-mono">{order.nf_numero ?? '—'}</span>
+                <br />
+                <span className="tms-cell-location">{fmtDate(order.data_emissao_nf)}</span>
+              </td>
+              <td>
+                <StatusBadge status={order.status_nota_fiscal} fallback="—" />
+              </td>
+              <td>
+                <span className="tms-cell-value">{fmt(order.valor_nota_fiscal)}</span>
+                <br />
+                <span className="tms-cell-location">{order.qtde_total_nf ?? '—'} itens · {fmtW(order.peso_nf)}</span>
+              </td>
+              <td>
+                <span className={`tms-cell-value ${hasRuptura ? 'tms-cell-value--high' : ''}`}>
+                  {fmtPct(order.perc_ruptura_valor)}
+                </span>
+                <br />
+                <span className="tms-cell-location">qtd: {fmtPct(order.perc_ruptura_qtde)}</span>
+              </td>
+              <td>
+                <span className="tms-cell-cliente" title={order.nome_transportadora_nf ?? undefined}>
+                  {order.nome_transportadora_nf ?? '—'}
+                </span>
+                <br />
+                <span className="tms-cell-location">{order.nome_motorista ?? '—'}</span>
+              </td>
+              <td>
+                {order.numero_cte ? (
+                  <>
+                    <span className="tms-cell-mono">{order.numero_cte}</span>
+                    <br />
+                    <span className="tms-cell-location">{fmt(order.valor_cte)} · {order.status_cte ?? '—'}</span>
+                  </>
+                ) : '—'}
+              </td>
+              <td>
+                <StatusBadge status={order.status_real_pedido} fallback="—" />
+              </td>
+              <td>
+                {order.ultima_ocorrencia_status ? (
+                  <>
+                    <StatusBadge status={order.ultima_ocorrencia_status} fallback="—" />
+                    <br />
+                    <span className="tms-cell-location">{fmtDateTime(order.ultima_ocorrencia_data)}</span>
+                  </>
+                ) : (
+                  <span className="tms-badge tms-badge--pending">Sem rastreio</span>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
