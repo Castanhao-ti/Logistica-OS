@@ -1,7 +1,7 @@
 import React from 'react';
-import { Truck, Settings, LifeBuoy } from 'lucide-react';
+import { Truck, Settings, LifeBuoy, Users } from 'lucide-react';
 
-export type View = 'tms' | 'admin';
+export type View = 'tms' | 'admin' | 'usuarios';
 
 interface Props {
   view: View;
@@ -30,6 +30,13 @@ export default function Sidebar({ view, onChange, pendingCount }: Props) {
           {pendingCount > 0 && (
             <span className="lsw-sidebar__nav-badge">{pendingCount}</span>
           )}
+        </button>
+        <button
+          className={`lsw-sidebar__nav-item ${view === 'usuarios' ? 'lsw-sidebar__nav-item--active' : ''}`}
+          onClick={() => onChange('usuarios')}
+        >
+          <Users size={18} />
+          <span>Usuários</span>
         </button>
         <button
           className={`lsw-sidebar__nav-item ${view === 'admin' ? 'lsw-sidebar__nav-item--active' : ''}`}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import OperacaoPanel from './pages/OperacaoPanel';
+import { UsuariosPage } from './usuarios/UsuariosPage';
 import Sidebar, { type View } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import './tms.css';
@@ -20,7 +21,8 @@ export default function App() {
             subtitle={view === 'admin' ? 'Regras de roteirização, exceções de CEP e tabelas de frete.' : undefined}
           />
           <div className="lsw-content">
-            {view === 'tms' && <OperacaoPanel onCountChange={setPendingCount} />}
+            {view === 'tms'      && <OperacaoPanel onCountChange={setPendingCount} />}
+            {view === 'usuarios' && <UsuariosPage />}
             {view === 'admin' && (
               <div className="lsw-empty-state">
                 <div className="lsw-empty-state__icon">
