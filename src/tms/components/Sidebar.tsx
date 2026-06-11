@@ -1,5 +1,6 @@
 import React from 'react';
 import { Truck, Settings, LifeBuoy, Users, LogOut } from 'lucide-react';
+import BrandMark from './BrandMark';
 import type { SessionUser } from '../auth/auth';
 
 export type View = 'tms' | 'admin' | 'usuarios';
@@ -32,7 +33,7 @@ export default function Sidebar({ view, onChange, pendingCount, user, onLogout }
   return (
     <aside className="lsw-sidebar">
       <div className="lsw-sidebar__brand">
-        <div className="lsw-sidebar__mark">LSW</div>
+        <BrandMark />
         <div className="lsw-sidebar__brand-text">
           <strong>LSW Distribuidora</strong>
           <span>Central de Gestão</span>

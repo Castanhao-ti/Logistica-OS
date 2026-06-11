@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, Mail, Loader2 } from 'lucide-react';
+import BrandMark from '../components/BrandMark';
 import { login, saveSession, type SessionUser } from './auth';
 
 interface Props {
@@ -35,7 +36,7 @@ export default function LoginPage({ onLogin }: Props) {
     <div className="lsw-login">
       <div className="lsw-login__card">
         <div className="lsw-login__brand">
-          <div className="lsw-sidebar__mark">LSW</div>
+          <BrandMark />
           <div>
             <strong>LSW Distribuidora</strong>
             <span>Central de Gestão</span>

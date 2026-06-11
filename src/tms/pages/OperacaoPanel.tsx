@@ -428,11 +428,6 @@ export default function OperacaoPanel({ onCountChange }: Props) {
                                 <option key={c.id} value={c.id}>{c.name}</option>
                               ))}
                             </select>
-                            {order.viamex_unit && carriers
-                              .find(c => c.id === (overrides[order.id] ?? order.suggested_carrier_id))
-                              ?.name.toLowerCase().includes('viamex') && (
-                              <span className="tms-unit-badge">{order.viamex_unit}</span>
-                            )}
                             <button
                               className="tms-btn tms-btn--approve tms-btn--sm"
                               disabled={approvingId === order.id}
