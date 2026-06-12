@@ -1,7 +1,6 @@
 import React from 'react';
-import { Search, Bell } from 'lucide-react';
-
-const FIRST_NAME = 'Rodolfo';
+import { Bell } from 'lucide-react';
+import { getSession } from '../auth/auth';
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -16,17 +15,15 @@ interface Props {
 }
 
 export default function Topbar({ title, subtitle }: Props) {
+  const firstName = getSession()?.nome.split(' ')[0] ?? '';
+
   return (
     <div className="lsw-topbar">
       <div className="lsw-topbar__greeting">
-        <h1>{title ?? `${greeting()}, ${FIRST_NAME}`}</h1>
+        <h1>{title ?? `${greeting()}${firstName ? `, ${firstName}` : ''}`}</h1>
         <p>{subtitle ?? 'Veja o que está acontecendo hoje na LSW.'}</p>
       </div>
       <div className="lsw-topbar__actions">
-        <div className="lsw-search">
-          <Search size={16} />
-          <input placeholder="Buscar pedidos, clientes..." disabled />
-        </div>
         <button className="lsw-icon-btn" title="Notificações">
           <Bell size={17} />
           <span className="lsw-icon-btn__dot" />

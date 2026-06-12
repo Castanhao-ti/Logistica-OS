@@ -248,7 +248,6 @@
   gap: 24px;
   padding: 32px 32px 8px;
   flex-wrap: wrap;
-  max-width: 1480px;
 }
 .lsw-topbar__greeting h1 {
   font-family: var(--font-display);
@@ -341,7 +340,10 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 1480px;
+}
+@media (max-width: 720px) {
+  .lsw-topbar { padding: 20px 16px 8px; }
+  .lsw-content { padding: 16px 16px 90px; }
 }
 
 /* ── KPI grid ── */
@@ -717,7 +719,7 @@
 }
 .tms-filters__search-icon {
   position: absolute;
-  left: 10px;
+  left: 13px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--tms-text-light);
@@ -727,9 +729,9 @@
 .tms-input {
   width: 100%;
   height: 36px;
-  padding: 0 10px;
+  padding: 0 14px;
   border: 1px solid var(--tms-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--tms-text);
@@ -738,14 +740,14 @@
   transition: border-color 0.15s;
 }
 .tms-input:focus { border-color: var(--lsw-green); }
-.tms-input--search { padding-left: 32px; }
+.tms-input--search { padding-left: 34px; }
 .tms-input--sm { max-width: 110px; }
 .tms-filters__label { font-size: 12px; color: var(--tms-text-muted); white-space: nowrap; }
 .tms-select {
   height: 36px;
-  padding: 0 28px 0 10px;
+  padding: 0 30px 0 14px;
   border: 1px solid var(--tms-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--tms-text);
@@ -761,7 +763,7 @@
   height: 36px;
   padding: 0 14px;
   border: 1px solid var(--tms-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: transparent;
   font-family: var(--font-ui);
   font-size: 12px;
@@ -776,9 +778,9 @@
 }
 .tms-btn-refresh {
   height: 36px;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 1px solid var(--tms-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: var(--tms-surface);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -856,7 +858,7 @@
   white-space: nowrap;
 }
 .tms-cell-value--high { color: var(--lsw-orange-dark); font-weight: 700; }
-.tms-cell-cliente { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.tms-cell-cliente { display: inline-block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; vertical-align: bottom; }
 .tms-cell-location { color: var(--tms-text-muted); font-size: 12px; }
 
 /* ── Carrier Tag ── */

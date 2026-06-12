@@ -442,14 +442,10 @@ export default function OperacaoPanel({ onCountChange }: Props) {
 
                     {tab === 'history' && (
                       <td>
-                        {order.assigned_carrier_name ? (
-                          <CarrierTag
-                            carrierId={order.assigned_carrier_id}
-                            carrierName={order.assigned_carrier_name}
-                            carrierColor={null}
-                            explanation={null}
-                            routingStatus="approved"
-                          />
+                        {order.nome_transportadora_nf ? (
+                          <span className="tms-cell-cliente" title={order.nome_transportadora_nf}>
+                            {order.nome_transportadora_nf}
+                          </span>
                         ) : (
                           <span className="tms-badge tms-badge--pending">—</span>
                         )}
