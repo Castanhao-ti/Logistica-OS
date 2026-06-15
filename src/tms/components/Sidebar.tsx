@@ -1,9 +1,10 @@
 import React from 'react';
-import { Truck, Settings, LifeBuoy, Users, LogOut } from 'lucide-react';
+import { Truck, Settings, LifeBuoy, Users, LogOut, TicketPercent } from 'lucide-react';
 import BrandMark from './BrandMark';
 import type { SessionUser } from '../auth/auth';
+import { podeOperar } from '../descontos/descontos';
 
-export type View = 'tms' | 'admin' | 'usuarios';
+export type View = 'tms' | 'admin' | 'usuarios' | 'descontos';
 
 const PERFIL_LABELS: Record<SessionUser['perfil'], string> = {
   admin: 'Admin',
@@ -22,7 +23,8 @@ interface Props {
 }
 
 export default function Sidebar({ view, onChange, pendingCount, user, onLogout }: Props) {
-  const isAdmin = user.perfil === 'admin';
+  const isAdmin   = user.perfil === 'admin';
+  const verDescontos = podeOperar(user.perfil);
   const initials = user.nome
     .split(' ')
     .map(n => n[0])
@@ -51,6 +53,15 @@ export default function Sidebar({ view, onChange, pendingCount, user, onLogout }
             <span className="lsw-sidebar__nav-badge">{pendingCount}</span>
           )}
         </button>
+        {verDescontos && (
+          <button
+            className={`lsw-sidebar__nav-item ${view === 'descontos' ? 'lsw-sidebar__nav-item--active' : ''}`}
+            onClick={() => onChange('descontos')}
+          >
+            <TicketPercent size={18} />
+            <span>Pedidos c/ Desconto</span>
+          </button>
+        )}
         {isAdmin && (
           <>
             <button

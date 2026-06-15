@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import OperacaoPanel from './pages/OperacaoPanel';
 import { UsuariosPage } from './usuarios/UsuariosPage';
+import { DescontosPage } from './descontos/DescontosPage';
+import { podeOperar } from './descontos/descontos';
 import Sidebar, { type View } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import LoginPage from './auth/LoginPage';
@@ -21,8 +23,14 @@ export default function App() {
     );
   }
 
-  const isAdmin = user.perfil === 'admin';
-  const activeView: View = !isAdmin && view !== 'tms' ? 'tms' : view;
+  const isAdmin   = user.perfil === 'admin';
+  const verDescontos = podeOperar(user.perfil);
+  const podeView = (v: View): boolean => {
+    if (v === 'tms') return true;
+    if (v === 'descontos') return verDescontos;
+    return isAdmin;
+  };
+  const activeView: View = podeView(view) ? view : 'tms';
 
   const handleLogout = () => {
     clearSession();
@@ -47,8 +55,9 @@ export default function App() {
             subtitle={activeView === 'admin' ? 'Regras de roteirização, exceções de CEP e tabelas de frete.' : undefined}
           />
           <div className="lsw-content">
-            {activeView === 'tms'      && <OperacaoPanel onCountChange={setPendingCount} />}
-            {activeView === 'usuarios' && isAdmin && <UsuariosPage />}
+            {activeView === 'tms'       && <OperacaoPanel onCountChange={setPendingCount} />}
+            {activeView === 'descontos' && verDescontos && <DescontosPage user={user} />}
+            {activeView === 'usuarios'  && isAdmin && <UsuariosPage />}
             {activeView === 'admin' && isAdmin && (
               <div className="lsw-empty-state">
                 <div className="lsw-empty-state__icon">
