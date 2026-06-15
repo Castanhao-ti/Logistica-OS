@@ -292,6 +292,60 @@
   box-shadow: 0 0 0 3px rgba(44,80,62,0.10);
 }
 
+/* Date pill no filterbar — data do pedido prominente */
+.dsc-date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--lsw-border);
+  border-radius: var(--radius-sm);
+  background: var(--lsw-surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dsc-date-pill:focus-within {
+  border-color: var(--lsw-green);
+  box-shadow: 0 0 0 3px rgba(44,80,62,0.10);
+}
+.dsc-date-pill__icon {
+  color: var(--lsw-green);
+  flex-shrink: 0;
+}
+.dsc-date-pill__input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--lsw-text);
+  padding: 0;
+  width: 130px;
+  font-weight: 500;
+}
+.dsc-date-pill__input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+.dsc-date-pill__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--lsw-text-soft);
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 0;
+}
+.dsc-date-pill__clear:hover {
+  color: var(--lsw-text);
+  background: rgba(0,0,0,0.05);
+}
+
 
 /* ════════════════════════════════════════════════════════════════
    Grid de cards

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   AlertCircle,
   ArrowUpDown,
+  CalendarDays,
   CheckCircle2,
   Inbox,
   Loader2,
@@ -138,6 +139,7 @@ function PedidosTab({ user }: { user: SessionUser }) {
   const [vendedor, setVendedor]         = useState<string>('todos');
   const [sort, setSort]                 = useState<SortKey>('desconto');
   const [filtroNf, setFiltroNf]         = useState<FiltroFaturado>('todos');
+  const [dataPedido, setDataPedido]     = useState<string>(hojeIso());
   const [periodo, setPeriodo]           = useState<FiltroPeriodo>('todos');
   const [dataDe, setDataDe]             = useState('');
   const [dataAte, setDataAte]           = useState('');
@@ -153,6 +155,7 @@ function PedidosTab({ user }: { user: SessionUser }) {
 
   const handlePeriodo = (p: FiltroPeriodo) => {
     setPeriodo(p);
+    setDataPedido('');
     if (p === 'custom') {
       if (!dataAte) setDataAte(hojeIso());
       if (!dataDe)  setDataDe(diasAtras(30));
@@ -164,10 +167,19 @@ function PedidosTab({ user }: { user: SessionUser }) {
     }
   };
 
+  const handleDataPedido = (v: string) => {
+    setDataPedido(v);
+    if (v) {
+      setPeriodo('todos');
+      setDataDe(''); setDataAte('');
+    }
+  };
+
   const rangeAtivo = useMemo(() => {
+    if (dataPedido) return { de: dataPedido, ate: dataPedido };
     if (periodo === 'todos') return null;
     return { de: dataDe || null, ate: dataAte || null };
-  }, [periodo, dataDe, dataAte]);
+  }, [dataPedido, periodo, dataDe, dataAte]);
 
   /* Recorte por data + NF — base para tudo */
   const baseFiltrada = useMemo<PedidoDesconto[]>(() => {
@@ -314,6 +326,28 @@ function PedidosTab({ user }: { user: SessionUser }) {
             value={busca}
             onChange={e => setBusca(e.target.value)}
           />
+        </div>
+
+        <div className="dsc-date-pill" title="Data do pedido">
+          <CalendarDays size={14} className="dsc-date-pill__icon" />
+          <input
+            type="date"
+            className="dsc-date-pill__input"
+            value={dataPedido}
+            onChange={e => handleDataPedido(e.target.value)}
+            aria-label="Data do pedido"
+          />
+          {dataPedido && (
+            <button
+              type="button"
+              className="dsc-date-pill__clear"
+              onClick={() => handleDataPedido('')}
+              aria-label="Limpar data"
+              title="Limpar data"
+            >
+              <XCircle size={13} />
+            </button>
+          )}
         </div>
 
         <div className="dsc-select">
