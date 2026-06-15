@@ -1,20 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import {
   AlertCircle,
+  ArrowUpDown,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  FileBarChart2,
   Inbox,
-  LayoutDashboard,
   Loader2,
   RefreshCw,
   Search,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
-  Tags,
-  Users,
   XCircle,
 } from 'lucide-react';
 import { PedidoDescontoCard } from './PedidoDescontoCard';
@@ -38,12 +32,12 @@ type FiltroFaturado = 'todos' | 'com_nf' | 'sem_nf';
 type FiltroPeriodo = 'todos' | '7d' | '15d' | '30d' | '60d' | 'custom';
 type AbaInterna = 'visao_geral' | 'pedidos' | 'aprovacoes' | 'clientes' | 'relatorios';
 
-const ABAS: Array<{ value: AbaInterna; label: string; icon: React.ReactNode }> = [
-  { value: 'visao_geral', label: 'Visão geral',         icon: <LayoutDashboard size={15} /> },
-  { value: 'pedidos',     label: 'Pedidos com desconto', icon: <Tags size={15} />            },
-  { value: 'aprovacoes',  label: 'Aprovações',           icon: <ShieldCheck size={15} />     },
-  { value: 'clientes',    label: 'Clientes',             icon: <Users size={15} />           },
-  { value: 'relatorios',  label: 'Relatórios',           icon: <FileBarChart2 size={15} />   },
+const ABAS: Array<{ value: AbaInterna; label: string }> = [
+  { value: 'visao_geral', label: 'Visão geral'          },
+  { value: 'pedidos',     label: 'Pedidos com desconto' },
+  { value: 'aprovacoes',  label: 'Aprovações'           },
+  { value: 'clientes',    label: 'Clientes'             },
+  { value: 'relatorios',  label: 'Relatórios'           },
 ];
 
 const FILTROS_STATUS: Array<{ value: FiltroStatus; label: string }> = [
@@ -120,8 +114,7 @@ export function DescontosPage({ user }: Props) {
             className={`dsc-tabbtn ${aba === t.value ? 'dsc-tabbtn--active' : ''}`}
             onClick={() => setAba(t.value)}
           >
-            {t.icon}
-            <span>{t.label}</span>
+            {t.label}
           </button>
         ))}
       </nav>
@@ -288,18 +281,24 @@ function PedidosTab({ user }: { user: SessionUser }) {
             )}
           </p>
         </div>
-        <div className="dsc-subheader__stats">
-          <div className="dsc-stat">
-            <span className="dsc-stat__label">Pedidos</span>
-            <span className="dsc-stat__value">{filtered.length}</span>
+        <div className="dsc-kpi-row">
+          <div className="dsc-kpi">
+            <span className="dsc-kpi__label">Pedidos</span>
+            <span className="dsc-kpi__value">{filtered.length}</span>
           </div>
-          <div className="dsc-stat">
-            <span className="dsc-stat__label">Desconto total</span>
-            <span className="dsc-stat__value dsc-stat__value--accent">
+          <div className="dsc-kpi">
+            <span className="dsc-kpi__label">Desconto total</span>
+            <span className="dsc-kpi__value dsc-kpi__value--accent">
               {fmtBRL(-descontoAcumulado)}
             </span>
           </div>
-          <button className="dsc-icon-btn dsc-icon-btn--lg" onClick={refresh} disabled={refreshing} title="Atualizar">
+          <button
+            className="dsc-icon-btn dsc-icon-btn--lg"
+            onClick={refresh}
+            disabled={refreshing}
+            title="Atualizar"
+            aria-label="Atualizar"
+          >
             <RefreshCw size={16} className={refreshing ? 'dsc-spin' : ''} />
           </button>
         </div>
@@ -331,7 +330,7 @@ function PedidosTab({ user }: { user: SessionUser }) {
         </div>
 
         <div className="dsc-select dsc-select--with-icon">
-          <SlidersHorizontal size={14} className="dsc-select__icon" />
+          <ArrowUpDown size={14} className="dsc-select__icon" />
           <select
             className="dsc-select__field"
             value={sort}
@@ -344,10 +343,10 @@ function PedidosTab({ user }: { user: SessionUser }) {
         </div>
 
         <button
-          className="dsc-btn dsc-btn--ghost dsc-btn--small"
+          className={`dsc-btn dsc-btn--outline dsc-btn--small ${maisFiltros ? 'is-active' : ''}`}
           onClick={() => setMaisFiltros(v => !v)}
         >
-          {maisFiltros ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          <SlidersHorizontal size={14} />
           Mais filtros
         </button>
       </div>

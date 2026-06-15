@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText } from 'lucide-react';
+import { Receipt } from 'lucide-react';
 import {
   fmtBRL,
   fmtData,
@@ -39,34 +39,31 @@ export function PedidoDescontoCard({ pedido, selected, onClick }: Props) {
       role="button"
       tabIndex={0}
     >
-      {/* Bloco 1 — identificação */}
+      {/* Bloco 1 — número + status */}
       <header className="dsc-card__head">
-        <div className="dsc-card__id">
-          <span className="dsc-card__numero">
-            #{pedido.numero_pedido_cliente ?? pedido.pedido_forca_venda_key}
-          </span>
-          <span className="dsc-card__pfv">PFV {pedido.pedido_forca_venda_key}</span>
-        </div>
-        <span className={`dsc-status dsc-status--${pedido.status_analise}`}>
+        <span className="dsc-card__numero">
+          #{pedido.numero_pedido_cliente ?? pedido.pedido_forca_venda_key}
+        </span>
+        <span className={`dsc-status-tag dsc-status-tag--${pedido.status_analise}`}>
           {STATUS_ANALISE_LABELS[pedido.status_analise]}
         </span>
       </header>
 
-      <div className="dsc-card__cliente-row">
-        <div className="dsc-card__cliente" title={pedido.nome_cliente}>
-          {pedido.nome_cliente}
-        </div>
-        <div className="dsc-card__data">
-          {fmtData(pedido.data_solicitacao)}
-          {faturado && (
-            <span className="dsc-tag dsc-tag--nf">
-              <FileText size={10} /> NF
-            </span>
-          )}
-        </div>
+      {/* Bloco 2 — PFV + cliente + NF */}
+      <div className="dsc-card__id-row">
+        <span className="dsc-card__pfv">PFV {pedido.pedido_forca_venda_key}</span>
+        {faturado && (
+          <span className="dsc-card__nf" title="Faturado com NF">
+            <Receipt size={12} />
+          </span>
+        )}
+        <span className="dsc-card__data">{fmtData(pedido.data_solicitacao)}</span>
+      </div>
+      <div className="dsc-card__cliente" title={pedido.nome_cliente}>
+        {pedido.nome_cliente}
       </div>
 
-      {/* Bloco 2 — métricas */}
+      {/* Bloco 3 — Total / Desconto */}
       <div className="dsc-card__metrics">
         <div className="dsc-card__metric">
           <span className="dsc-card__metric-label">Total</span>
@@ -81,11 +78,11 @@ export function PedidoDescontoCard({ pedido, selected, onClick }: Props) {
           >
             {fmtBRL(pedido.valor_desconto)}
           </span>
-          <span className="dsc-card__metric-sub">{fmtPerc(percDesc)}</span>
+          <span className="dsc-card__metric-perc">{fmtPerc(percDesc)}</span>
         </div>
       </div>
 
-      {/* Bloco 3 — vendedor + margem */}
+      {/* Bloco 4 — vendedor + margem */}
       <footer className="dsc-card__foot">
         <div className="dsc-card__vendedor">
           <span className="dsc-avatar" aria-hidden>{iniciais}</span>
@@ -93,9 +90,7 @@ export function PedidoDescontoCard({ pedido, selected, onClick }: Props) {
             {pedido.nome_vendedor ?? 'Sem vendedor'}
           </span>
         </div>
-        <span className={`dsc-margem dsc-margem--${margemTom}`}>
-          Margem {margemFmt}
-        </span>
+        <span className={`dsc-margem dsc-margem--${margemTom}`}>{margemFmt}</span>
       </footer>
     </article>
   );

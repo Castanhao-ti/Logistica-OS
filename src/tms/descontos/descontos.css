@@ -16,92 +16,97 @@
 .dsc-tabs-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   border-bottom: 1px solid var(--lsw-border);
-  padding: 0 4px;
-  margin-bottom: 18px;
+  padding: 0;
+  margin-bottom: 22px;
   overflow-x: auto;
 }
 .dsc-tabbtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   background: transparent;
   border: none;
   font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--lsw-text-muted);
-  padding: 12px 16px;
+  padding: 9px 14px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   white-space: nowrap;
   transition: color 0.15s, border-color 0.15s;
+  letter-spacing: -0.005em;
 }
 .dsc-tabbtn:hover { color: var(--lsw-text); }
 .dsc-tabbtn--active {
-  color: var(--lsw-green);
-  border-bottom-color: var(--lsw-orange);
+  color: var(--lsw-text);
+  font-weight: 600;
+  border-bottom-color: var(--lsw-green);
 }
-.dsc-tabbtn svg { opacity: 0.8; }
-.dsc-tabbtn--active svg { opacity: 1; color: var(--lsw-orange); }
 
 
 /* ────────── Sub-header da aba ────────── */
 .dsc-subheader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-  margin-bottom: 16px;
+  align-items: flex-end;
+  gap: 32px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 .dsc-subheader__title-area { min-width: 0; }
 .dsc-subheader__title {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--lsw-green);
-  letter-spacing: -0.015em;
-  line-height: 1.2;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--lsw-text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin: 0;
 }
 .dsc-subheader__sub {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--lsw-text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 .dsc-subheader__stamp {
   color: var(--lsw-text-soft);
+  font-size: 12px;
 }
-.dsc-subheader__stats {
+
+/* KPIs verticais (label em cima, valor em baixo) */
+.dsc-kpi-row {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  align-items: flex-end;
+  gap: 28px;
 }
-.dsc-stat {
+.dsc-kpi {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   text-align: right;
+  min-width: 0;
 }
-.dsc-stat__label {
-  font-size: 10.5px;
+.dsc-kpi__label {
+  font-size: 10px;
   font-weight: 700;
   color: var(--lsw-text-soft);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
-.dsc-stat__value {
+.dsc-kpi__value {
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--lsw-text);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
-.dsc-stat__value--accent { color: var(--lsw-orange); }
+.dsc-kpi__value--accent { color: var(--lsw-orange); }
 
 
 /* ────────── Filter bar ────────── */
@@ -179,7 +184,7 @@
 }
 
 
-/* ────────── Chips de status ────────── */
+/* ────────── Chips de status (pills leves) ────────── */
 .dsc-chips {
   display: flex;
   gap: 6px;
@@ -187,49 +192,43 @@
   margin-bottom: 18px;
 }
 .dsc-chips--compact { margin-bottom: 0; }
+
 .dsc-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 28px;
   padding: 0 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--lsw-border);
-  background: transparent;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(232,227,216,0.50);
   font-family: var(--font-ui);
   font-size: 12.5px;
   color: var(--lsw-text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.12s;
   font-weight: 500;
   white-space: nowrap;
 }
 .dsc-chip:hover {
-  border-color: var(--lsw-green);
-  color: var(--lsw-green);
+  background: rgba(232,227,216,0.85);
+  color: var(--lsw-text);
 }
 .dsc-chip--active {
-  background: var(--lsw-green);
-  color: #fff;
-  border-color: var(--lsw-green);
+  background: var(--lsw-surface);
+  color: var(--lsw-text);
+  border-color: var(--lsw-border);
   font-weight: 600;
+  box-shadow: 0 1px 2px rgba(32,40,32,0.04);
 }
 .dsc-chip__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.06);
+  font-family: var(--font-mono);
   font-size: 10.5px;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--lsw-text-soft);
   font-variant-numeric: tabular-nums;
 }
-.dsc-chip--active .dsc-chip__count {
-  background: rgba(255,255,255,0.22);
-}
+.dsc-chip--active .dsc-chip__count { color: var(--lsw-green); }
 
 
 /* ────────── Filtros secundários (Mais filtros) ────────── */
@@ -315,38 +314,42 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-  box-shadow: var(--shadow-card);
 }
 .dsc-card:hover {
-  border-color: rgba(44,80,62,0.45);
+  border-color: rgba(44,80,62,0.40);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(32,48,42,0.06);
 }
 .dsc-card--selected {
   border-color: var(--lsw-green);
-  box-shadow: 0 0 0 1px var(--lsw-green), var(--shadow-card);
+  box-shadow: 0 0 0 1px var(--lsw-green);
 }
 
+/* 1. Numero grande + status tag */
 .dsc-card__head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 8px;
 }
-.dsc-card__id {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
 .dsc-card__numero {
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--lsw-text);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+/* 2. PFV + NF + data inline */
+.dsc-card__id-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .dsc-card__pfv {
   font-family: var(--font-mono);
@@ -354,47 +357,47 @@
   font-weight: 600;
   color: var(--lsw-text-muted);
   letter-spacing: 0.04em;
+}
+.dsc-card__nf {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
-  background: var(--lsw-bg);
-  border: 1px solid var(--lsw-border);
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
-  width: max-content;
+  background: rgba(55,48,163,0.08);
+  color: #3730A3;
+  border: 1px solid rgba(55,48,163,0.18);
+}
+.dsc-card__data {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--lsw-text-soft);
+  margin-left: auto;
 }
 
-.dsc-card__cliente-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 8px;
-}
+/* 3. Cliente em uppercase, mais discreto */
 .dsc-card__cliente {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--lsw-text);
   line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-}
-.dsc-card__data {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--lsw-text-muted);
-  white-space: nowrap;
+  min-height: 2.7em;
 }
 
+/* 4. Métricas Total / Desconto com % isolado */
 .dsc-card__metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0 16px;
-  padding: 12px 0;
+  padding: 12px 0 10px;
   border-top: 1px solid var(--lsw-border);
   border-bottom: 1px solid var(--lsw-border);
 }
@@ -404,25 +407,28 @@
   font-weight: 700;
   color: var(--lsw-text-soft);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 .dsc-card__metric-value {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--lsw-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
-.dsc-card__metric-value--negative { color: var(--lsw-orange); }
-.dsc-card__metric-sub {
+.dsc-card__metric-value--negative { color: var(--lsw-text); }
+.dsc-card__metric-perc {
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--lsw-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lsw-orange);
   font-variant-numeric: tabular-nums;
+  margin-top: 2px;
 }
 
+/* 5. Footer: vendedor + margem */
 .dsc-card__foot {
   display: flex;
   align-items: center;
@@ -437,12 +443,12 @@
 }
 .dsc-card__vendedor-nome {
   font-size: 12px;
-  color: var(--lsw-text);
+  color: var(--lsw-text-muted);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 140px;
 }
 
 
@@ -487,6 +493,27 @@
 .dsc-status--aguardando_aprovacao { background: rgba(208,95,2,0.10);   color: var(--lsw-orange-dark); border-color: rgba(208,95,2,0.28); }
 .dsc-status--aprovado             { background: rgba(21,128,61,0.10);  color: #15803D; border-color: rgba(21,128,61,0.22); }
 .dsc-status--reprovado            { background: rgba(185,28,28,0.10);  color: #B91C1C; border-color: rgba(185,28,28,0.28); }
+
+/* Status tag (outline, sem fundo) — usado no card */
+.dsc-status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.dsc-status-tag--pendente             { color: #B45309; border-color: rgba(245,158,11,0.45); }
+.dsc-status-tag--em_analise           { color: #1D4ED8; border-color: rgba(29,78,216,0.45); }
+.dsc-status-tag--aguardando_aprovacao { color: var(--lsw-orange-dark); border-color: rgba(208,95,2,0.50); }
+.dsc-status-tag--aprovado             { color: #15803D; border-color: rgba(21,128,61,0.45); }
+.dsc-status-tag--reprovado            { color: #B91C1C; border-color: rgba(185,28,28,0.50); }
 
 .dsc-tag {
   display: inline-flex;
@@ -598,6 +625,20 @@
   color: var(--lsw-text-muted);
 }
 .dsc-btn--ghost:hover:not(:disabled) { background: var(--lsw-bg); color: var(--lsw-text); }
+.dsc-btn--outline {
+  background: var(--lsw-surface);
+  color: var(--lsw-text);
+  border-color: var(--lsw-border);
+}
+.dsc-btn--outline:hover:not(:disabled) {
+  border-color: var(--lsw-green);
+  color: var(--lsw-green);
+}
+.dsc-btn--outline.is-active {
+  border-color: var(--lsw-green);
+  background: rgba(44,80,62,0.06);
+  color: var(--lsw-green);
+}
 
 
 /* ────────── Icon button ────────── */
