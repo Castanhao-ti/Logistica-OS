@@ -187,3 +187,14 @@ export const fmtPerc = (perc: number | null | undefined, casas = 1) =>
 export const STATUS_FATURADO = 'Faturado por Nota Fiscal';
 export const isFaturado = (status_pedido: string | null | undefined) =>
   status_pedido === STATUS_FATURADO;
+
+/** Iniciais (até 2) para avatar do vendedor. */
+export const iniciaisVendedor = (nome: string | null | undefined): string => {
+  if (!nome) return '—';
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return '—';
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+};
+
+export type SortKey = 'desconto' | 'margem' | 'data';

@@ -1,19 +1,23 @@
 import React, { useMemo, useState } from 'react';
 import {
-  X,
-  Loader2,
-  RefreshCw,
   AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
   CheckCircle2,
-  XCircle,
+  Loader2,
+  Minus,
   Play,
+  RefreshCw,
   Send,
+  X,
+  XCircle,
 } from 'lucide-react';
 import {
   fmtBRL,
   fmtData,
   fmtDataHora,
   fmtPerc,
+  iniciaisVendedor,
   isFaturado,
   percDesconto,
   podeDecidir,
@@ -27,8 +31,6 @@ import {
 import { useDescontoDetalhe } from './useDescontoDetalhe';
 import { AcaoModal } from './AcaoModal';
 import type { SessionUser } from '../auth/auth';
-
-type AbaItens = 'com_desconto' | 'com_acrescimo' | 'sem_variacao';
 
 interface AcaoConfig {
   acao: AcaoAnalise;
@@ -50,7 +52,7 @@ function acoesDisponiveis(
       acoes.push({
         acao: 'iniciar_analise',
         rotulo: 'Iniciar análise',
-        classe: 'dsc-btn dsc-btn--primary',
+        classe: 'dsc-btn dsc-btn--secondary',
         icone: <Play size={14} />,
       });
     }
@@ -97,7 +99,6 @@ export function PedidoDescontoDetalhe({
   onAcaoOk,
 }: Props) {
   const { data, loading, refreshing, error, refresh } = useDescontoDetalhe(pedidoKey);
-  const [aba, setAba] = useState<AbaItens>('com_desconto');
   const [acaoAberta, setAcaoAberta] = useState<AcaoConfig | null>(null);
 
   const acoes = useMemo(
@@ -106,13 +107,21 @@ export function PedidoDescontoDetalhe({
   );
 
   return (
-    <div className="dsc-detail-overlay" onClick={onClose}>
-      <div className="dsc-detail" onClick={e => e.stopPropagation()}>
-        <div className="dsc-detail__topbar">
-          <div className="dsc-detail__title-area">
-            <div className="dsc-detail__pedido">
-              Pedido #{data?.cabecalho?.numero_pedido_cliente ?? pedidoKey}
-              <span className="dsc-detail__pfv">PFV {pedidoKey}</span>
+    <div className="dsc-sheet-overlay" onClick={onClose}>
+      <aside
+        className="dsc-sheet"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-label={`Detalhe do pedido ${pedidoKey}`}
+      >
+        {/* Cabeçalho do sheet */}
+        <header className="dsc-sheet__head">
+          <div className="dsc-sheet__head-main">
+            <div className="dsc-sheet__title-line">
+              <h2 className="dsc-sheet__numero">
+                #{data?.cabecalho?.numero_pedido_cliente ?? pedidoKey}
+              </h2>
+              <span className="dsc-card__pfv">PFV {pedidoKey}</span>
               {data && (
                 <span className={`dsc-status dsc-status--${data.analise.status}`}>
                   {STATUS_ANALISE_LABELS[data.analise.status]}
@@ -122,30 +131,36 @@ export function PedidoDescontoDetalhe({
                 <span className="dsc-tag dsc-tag--nf">NF</span>
               )}
             </div>
-            <div className="dsc-detail__sub">
+            <div className="dsc-sheet__sub">
               {data?.cabecalho?.nome_cliente ?? '—'}
               {data?.cabecalho?.data_solicitacao && (
-                <> · solicitado em {fmtData(data.cabecalho.data_solicitacao)}</>
+                <> · {fmtData(data.cabecalho.data_solicitacao)}</>
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="dsc-sheet__head-actions">
             <button
-              className="dsc-btn dsc-btn--secondary"
+              className="dsc-icon-btn"
               onClick={refresh}
               disabled={refreshing || loading}
               title="Atualizar"
+              aria-label="Atualizar"
             >
-              <RefreshCw size={14} className={refreshing ? 'dsc-spin' : ''} />
-              Atualizar
+              <RefreshCw size={15} className={refreshing ? 'dsc-spin' : ''} />
             </button>
-            <button className="dsc-detail__close" onClick={onClose} aria-label="Fechar">
-              <X size={18} />
+            <button
+              className="dsc-icon-btn"
+              onClick={onClose}
+              title="Fechar"
+              aria-label="Fechar"
+            >
+              <X size={16} />
             </button>
           </div>
-        </div>
+        </header>
 
-        <div className="dsc-detail__body">
+        {/* Corpo */}
+        <div className="dsc-sheet__body">
           {loading && (
             <div className="dsc-loading">
               <Loader2 size={26} className="dsc-spin" />
@@ -156,7 +171,7 @@ export function PedidoDescontoDetalhe({
           {error && !loading && (
             <div className="dsc-error-state">
               <AlertCircle size={28} />
-              <p style={{ fontWeight: 600, fontSize: 13 }}>Não foi possível carregar o pedido.</p>
+              <p style={{ fontWeight: 600, fontSize: 13 }}>Não foi possível carregar.</p>
               <p style={{ fontSize: 12, color: 'var(--lsw-text-muted)' }}>{error}</p>
               <button className="dsc-btn dsc-btn--primary" onClick={refresh}>
                 Tentar novamente
@@ -166,21 +181,31 @@ export function PedidoDescontoDetalhe({
 
           {data && !loading && !error && (
             <>
-              <CabecalhoCard detalhe={data} />
-              <AnaliseCard
-                detalhe={data}
-                acoes={acoes}
-                onAcao={setAcaoAberta}
-              />
-              <ItensSection
-                detalhe={data}
-                aba={aba}
-                onAbaChange={setAba}
-              />
+              <MetricasGrid detalhe={data} />
+              <VendedorBlock detalhe={data} />
+              <AnaliseBlock detalhe={data} />
+              <ItensSections detalhe={data} />
             </>
           )}
         </div>
-      </div>
+
+        {/* Rodapé com ações */}
+        {data && !loading && !error && acoes.length > 0 && (
+          <footer className="dsc-sheet__footer">
+            <button className="dsc-btn dsc-btn--ghost" onClick={onClose}>
+              Fechar
+            </button>
+            <div className="dsc-sheet__footer-actions">
+              {acoes.map(cfg => (
+                <button key={cfg.acao} className={cfg.classe} onClick={() => setAcaoAberta(cfg)}>
+                  {cfg.icone}
+                  {cfg.rotulo}
+                </button>
+              ))}
+            </div>
+          </footer>
+        )}
+      </aside>
 
       {acaoAberta && data && (
         <AcaoModal
@@ -201,229 +226,179 @@ export function PedidoDescontoDetalhe({
   );
 }
 
-function CabecalhoCard({ detalhe }: { detalhe: DetalhePedido }) {
+/* ───────────────────── Métricas (3 cards) ───────────────────── */
+
+function MetricasGrid({ detalhe }: { detalhe: DetalhePedido }) {
   const cab = detalhe.cabecalho;
   if (!cab) {
     return (
-      <div className="dsc-summary">
-        <div className="dsc-summary__col">
-          <p style={{ fontSize: 13, color: 'var(--lsw-text-muted)' }}>
-            Cabeçalho indisponível para este pedido.
-          </p>
-        </div>
+      <div className="dsc-metric-grid">
+        <p style={{ fontSize: 13, color: 'var(--lsw-text-muted)' }}>
+          Cabeçalho indisponível.
+        </p>
       </div>
     );
   }
-
+  const percDesc = percDesconto(cab.valor_pedido, cab.valor_desconto, cab.valor_acrescimo);
   const margemTom = tomMargem(cab.perc_margem);
-  const margemFmt =
-    cab.perc_margem == null
-      ? '—'
-      : `${cab.perc_margem.toFixed(1).replace('.', ',')}%`;
 
   return (
-    <div className="dsc-summary">
-      <div className="dsc-summary__col">
-        <h3>Cliente</h3>
-        <dl>
-          <div className="dsc-summary__line">
-            <dt>Nome</dt><dd>{cab.nome_cliente}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Vendedor</dt><dd>{cab.nome_vendedor ?? '—'}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Equipe</dt><dd>{cab.equipe_vendedor ?? '—'}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Status pedido</dt><dd>{cab.status_pedido ?? '—'}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>SKUs</dt>
-            <dd>{cab.qtde_skus_com_desconto}/{cab.qtde_skus} c/ desconto</dd>
-          </div>
-        </dl>
+    <div className="dsc-metric-grid">
+      <div className="dsc-metric-card">
+        <span className="dsc-metric-card__label">Valor total</span>
+        <span className="dsc-metric-card__value">{fmtBRL(cab.valor_pedido)}</span>
+        <span className="dsc-metric-card__sub">
+          {cab.qtde_skus_com_desconto}/{cab.qtde_skus} SKUs c/ desconto
+        </span>
       </div>
-
-      <div className="dsc-summary__col">
-        <h3>Financeiro</h3>
-        <dl>
-          <div className="dsc-summary__line">
-            <dt>Valor do pedido</dt><dd>{fmtBRL(cab.valor_pedido)}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Desconto</dt>
-            <dd className={cab.valor_desconto < 0 ? 'negative' : ''}>
-              {fmtBRL(cab.valor_desconto)}
-              <span className="dsc-summary__perc">
-                {fmtPerc(percDesconto(cab.valor_pedido, cab.valor_desconto, cab.valor_acrescimo))}
-              </span>
-            </dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Acréscimo</dt>
-            <dd className={cab.valor_acrescimo > 0 ? 'positive' : ''}>
-              {fmtBRL(cab.valor_acrescimo)}
-            </dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Custo total</dt><dd>{fmtBRL(cab.custo_total)}</dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Lucro bruto</dt>
-            <dd
-              className={
-                cab.lucro_bruto != null && cab.lucro_bruto < 0
-                  ? 'negative'
-                  : cab.lucro_bruto != null && cab.lucro_bruto > 0
-                    ? 'positive'
-                    : ''
-              }
-            >
-              {fmtBRL(cab.lucro_bruto)}
-            </dd>
-          </div>
-          <div className="dsc-summary__line">
-            <dt>Margem</dt>
-            <dd>
-              <span className={`dsc-margem dsc-margem--${margemTom}`}>{margemFmt}</span>
-            </dd>
-          </div>
-        </dl>
+      <div className="dsc-metric-card">
+        <span className="dsc-metric-card__label">Desconto</span>
+        <span className={`dsc-metric-card__value ${cab.valor_desconto < 0 ? 'is-negative' : ''}`}>
+          {fmtBRL(cab.valor_desconto)}
+        </span>
+        <span className="dsc-metric-card__sub">{fmtPerc(percDesc)} sobre tabela</span>
+      </div>
+      <div className="dsc-metric-card">
+        <span className="dsc-metric-card__label">Margem</span>
+        <span className={`dsc-metric-card__value dsc-metric-card__value--${margemTom}`}>
+          {cab.perc_margem == null
+            ? '—'
+            : `${cab.perc_margem.toFixed(1).replace('.', ',')}%`}
+        </span>
+        <span className="dsc-metric-card__sub">
+          Lucro {fmtBRL(cab.lucro_bruto)}
+        </span>
       </div>
     </div>
   );
 }
 
-function AnaliseCard({
-  detalhe,
-  acoes,
-  onAcao,
-}: {
-  detalhe: DetalhePedido;
-  acoes: AcaoConfig[];
-  onAcao: (a: AcaoConfig) => void;
-}) {
-  const an = detalhe.analise;
+/* ───────────────────── Vendedor ───────────────────── */
 
+function VendedorBlock({ detalhe }: { detalhe: DetalhePedido }) {
+  const cab = detalhe.cabecalho;
+  if (!cab) return null;
   return (
-    <div className="dsc-analise">
-      <div className="dsc-analise__row">
-        <div className="dsc-analise__status-info">
-          <span className={`dsc-status dsc-status--${an.status}`}>
-            {STATUS_ANALISE_LABELS[an.status]}
-          </span>
-          {an.operador && (
-            <span style={{ fontSize: 12.5, color: 'var(--lsw-text-muted)' }}>
-              em análise por <strong style={{ color: 'var(--lsw-text)' }}>{an.operador}</strong>
-            </span>
-          )}
-        </div>
-        {acoes.length > 0 && (
-          <div className="dsc-analise__actions">
-            {acoes.map(cfg => (
-              <button key={cfg.acao} className={cfg.classe} onClick={() => onAcao(cfg)}>
-                {cfg.icone}
-                {cfg.rotulo}
-              </button>
-            ))}
+    <section className="dsc-block">
+      <h3 className="dsc-block__title">Vendedor responsável</h3>
+      <div className="dsc-vendedor-card">
+        <span className="dsc-avatar dsc-avatar--lg">
+          {iniciaisVendedor(cab.nome_vendedor)}
+        </span>
+        <div>
+          <div className="dsc-vendedor-card__nome">{cab.nome_vendedor ?? '—'}</div>
+          <div className="dsc-vendedor-card__meta">
+            {cab.equipe_vendedor ?? 'Sem equipe'}
+            {cab.status_pedido && (
+              <> · <span className="dsc-vendedor-card__status">{cab.status_pedido}</span></>
+            )}
           </div>
-        )}
+        </div>
       </div>
+    </section>
+  );
+}
 
-      <dl className="dsc-analise__history">
+/* ───────────────────── Análise ───────────────────── */
+
+function AnaliseBlock({ detalhe }: { detalhe: DetalhePedido }) {
+  const a = detalhe.analise;
+  return (
+    <section className="dsc-block">
+      <h3 className="dsc-block__title">Análise</h3>
+      <dl className="dsc-analise-history">
         <div>
           <dt>Operador</dt>
-          <dd>{an.operador ?? '—'}</dd>
-          {an.observacao_operador && (
-            <div className="dsc-analise__obs">{an.observacao_operador}</div>
+          <dd>{a.operador ?? '—'}</dd>
+          {a.observacao_operador && (
+            <div className="dsc-analise-obs">{a.observacao_operador}</div>
           )}
         </div>
         <div>
           <dt>Gerente</dt>
-          <dd>{an.gerente ?? '—'}</dd>
-          {an.observacao_gerente && (
-            <div className="dsc-analise__obs">{an.observacao_gerente}</div>
+          <dd>{a.gerente ?? '—'}</dd>
+          {a.observacao_gerente && (
+            <div className="dsc-analise-obs">{a.observacao_gerente}</div>
           )}
         </div>
         <div>
           <dt>Solicitado em</dt>
-          <dd>{fmtDataHora(an.solicitado_em)}</dd>
+          <dd>{fmtDataHora(a.solicitado_em)}</dd>
         </div>
         <div>
           <dt>Decidido em</dt>
-          <dd>{fmtDataHora(an.decidido_em)}</dd>
+          <dd>{fmtDataHora(a.decidido_em)}</dd>
         </div>
       </dl>
-    </div>
+    </section>
   );
 }
 
-const ABA_ROTULO: Record<AbaItens, string> = {
-  com_desconto:  'Itens com desconto',
-  com_acrescimo: 'Itens com acréscimo',
-  sem_variacao:  'Itens sem variação',
-};
+/* ───────────────────── Itens (3 seções) ───────────────────── */
 
-function ItensSection({
-  detalhe,
-  aba,
-  onAbaChange,
-}: {
-  detalhe: DetalhePedido;
-  aba: AbaItens;
-  onAbaChange: (a: AbaItens) => void;
-}) {
-  const counts: Record<AbaItens, number> = {
-    com_desconto:  detalhe.itens.com_desconto.length,
-    com_acrescimo: detalhe.itens.com_acrescimo.length,
-    sem_variacao:  detalhe.itens.sem_variacao.length,
-  };
-  const itens = detalhe.itens[aba] ?? [];
+const SECAO_CONFIG = {
+  com_desconto: {
+    titulo: 'Itens com desconto',
+    icone: <ArrowDownRight size={14} />,
+    classe: 'dsc-items-section--desconto',
+  },
+  com_acrescimo: {
+    titulo: 'Itens com acréscimo',
+    icone: <ArrowUpRight size={14} />,
+    classe: 'dsc-items-section--acrescimo',
+  },
+  sem_variacao: {
+    titulo: 'Itens sem variação',
+    icone: <Minus size={14} />,
+    classe: 'dsc-items-section--neutro',
+  },
+} as const;
 
+type ChaveSecao = keyof typeof SECAO_CONFIG;
+
+function ItensSections({ detalhe }: { detalhe: DetalhePedido }) {
+  const ordem: ChaveSecao[] = ['com_desconto', 'com_acrescimo', 'sem_variacao'];
   return (
-    <div>
-      <div className="dsc-tabs">
-        {(Object.keys(ABA_ROTULO) as AbaItens[]).map(k => (
-          <button
-            key={k}
-            className={`dsc-tab ${aba === k ? 'dsc-tab--active' : ''}`}
-            onClick={() => onAbaChange(k)}
-          >
-            {ABA_ROTULO[k]}
-            <span className="dsc-tab__count">{counts[k]}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="dsc-table-wrap">
-        {itens.length === 0 ? (
-          <div className="dsc-table-empty">Nenhum item nesta categoria.</div>
-        ) : (
-          <table className="dsc-table">
-            <thead>
-              <tr>
-                <th>Produto</th>
-                <th className="num">Qtd</th>
-                <th className="num">Preço tabela</th>
-                <th className="num">Preço aplicado</th>
-                <th className="num">Variação un.</th>
-                <th className="num">Variação total</th>
-                <th className="num">Preço final</th>
-                <th className="num">Custo unit.</th>
-                <th className="num">Total item</th>
-                <th className="num">Margem item</th>
-              </tr>
-            </thead>
-            <tbody>
-              {itens.map(item => (
-                <LinhaItem key={item.produto_key} item={item} />
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
+    <section className="dsc-block">
+      <h3 className="dsc-block__title">Itens do pedido</h3>
+      {ordem.map(k => {
+        const cfg = SECAO_CONFIG[k];
+        const itens = detalhe.itens[k] ?? [];
+        return (
+          <div key={k} className={`dsc-items-section ${cfg.classe}`}>
+            <div className="dsc-items-section__head">
+              <span className="dsc-items-section__icon">{cfg.icone}</span>
+              <span className="dsc-items-section__title">{cfg.titulo}</span>
+              <span className="dsc-items-section__count">{itens.length}</span>
+            </div>
+            {itens.length === 0 ? (
+              <div className="dsc-items-section__empty">Nenhum item.</div>
+            ) : (
+              <div className="dsc-items-table-wrap">
+                <table className="dsc-items-table">
+                  <thead>
+                    <tr>
+                      <th>SKU · Descrição</th>
+                      <th className="num">Qtd</th>
+                      <th className="num">Tabela</th>
+                      <th className="num">Praticado</th>
+                      <th className="num">Variação un.</th>
+                      <th className="num">Variação total</th>
+                      <th className="num">Margem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itens.map(item => (
+                      <LinhaItem key={item.produto_key} item={item} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </section>
   );
 }
 
@@ -439,9 +414,11 @@ function LinhaItem({ item }: { item: ItemPedido }) {
 
   return (
     <tr>
-      <td className="dsc-table__produto">
-        {item.descricao_produto ?? `Produto ${item.produto_key}`}
-        <small>cod {item.produto_key}</small>
+      <td className="dsc-items-table__produto">
+        <span className="dsc-items-table__sku">{item.produto_key}</span>
+        <span className="dsc-items-table__desc">
+          {item.descricao_produto ?? `Produto ${item.produto_key}`}
+        </span>
       </td>
       <td className="num">{item.quantidade}</td>
       <td className="num">{fmtBRL(item.preco_tabela)}</td>
@@ -452,9 +429,6 @@ function LinhaItem({ item }: { item: ItemPedido }) {
       <td className={`num ${variacaoNegativa ? 'neg' : variacaoPositiva ? 'pos' : ''}`}>
         {fmtBRL(variacaoTotal)}
       </td>
-      <td className="num">{fmtBRL(item.preco_final)}</td>
-      <td className="num">{fmtBRL(item.custo_unitario)}</td>
-      <td className="num">{fmtBRL(item.valor_total_item)}</td>
       <td className="num">
         <span className={`dsc-margem dsc-margem--${margemTom}`}>{margemFmt}</span>
       </td>
