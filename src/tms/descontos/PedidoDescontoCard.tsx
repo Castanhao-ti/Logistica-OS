@@ -1,8 +1,11 @@
 import React from 'react';
-import { Calendar, User, ShoppingBag } from 'lucide-react';
+import { Calendar, FileText, ShoppingBag, User } from 'lucide-react';
 import {
   fmtBRL,
   fmtData,
+  fmtPerc,
+  isFaturado,
+  percDesconto,
   STATUS_ANALISE_LABELS,
   tomMargem,
   type PedidoDesconto,
@@ -20,6 +23,13 @@ export function PedidoDescontoCard({ pedido, onClick }: Props) {
       ? '—'
       : `${pedido.perc_margem.toFixed(1).replace('.', ',')}%`;
 
+  const percDesc = percDesconto(
+    pedido.valor_pedido,
+    pedido.valor_desconto,
+    pedido.valor_acrescimo,
+  );
+  const faturado = isFaturado(pedido.status_pedido);
+
   return (
     <div className="dsc-card" onClick={onClick} role="button" tabIndex={0}>
       <div>
@@ -27,9 +37,15 @@ export function PedidoDescontoCard({ pedido, onClick }: Props) {
           <span className="dsc-card__pedido">
             #{pedido.numero_pedido_cliente ?? pedido.pedido_forca_venda_key}
           </span>
+          <span className="dsc-card__pfv">PFV {pedido.pedido_forca_venda_key}</span>
           <span className={`dsc-status dsc-status--${pedido.status_analise}`}>
             {STATUS_ANALISE_LABELS[pedido.status_analise]}
           </span>
+          {faturado && (
+            <span className="dsc-tag dsc-tag--nf">
+              <FileText size={11} /> NF
+            </span>
+          )}
           <span className={`dsc-margem dsc-margem--${margemTom}`}>
             Margem {margemFmt}
           </span>
@@ -58,6 +74,7 @@ export function PedidoDescontoCard({ pedido, onClick }: Props) {
           >
             {fmtBRL(pedido.valor_desconto)}
           </div>
+          <div className="dsc-card__num-perc">{fmtPerc(percDesc)}</div>
         </div>
         <div>
           <div className="dsc-card__num-label">Lucro</div>

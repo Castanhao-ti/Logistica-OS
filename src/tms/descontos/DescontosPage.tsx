@@ -11,6 +11,7 @@ import { PedidoDescontoCard } from './PedidoDescontoCard';
 import { PedidoDescontoDetalhe } from './PedidoDescontoDetalhe';
 import { useDescontos } from './useDescontos';
 import {
+  isFaturado,
   STATUS_ANALISE_LABELS,
   type PedidoDesconto,
   type StatusAnalise,
@@ -19,6 +20,8 @@ import type { SessionUser } from '../auth/auth';
 import './descontos.css';
 
 type FiltroStatus = 'todos' | StatusAnalise;
+type FiltroFaturado = 'todos' | 'com_nf' | 'sem_nf';
+type FiltroPeriodo = 'todos' | '7d' | '15d' | '30d' | '60d' | 'custom';
 
 const FILTROS_STATUS: Array<{ value: FiltroStatus; label: string }> = [
   { value: 'todos',                label: 'Todos'           },
@@ -28,6 +31,32 @@ const FILTROS_STATUS: Array<{ value: FiltroStatus; label: string }> = [
   { value: 'aprovado',             label: STATUS_ANALISE_LABELS.aprovado             },
   { value: 'reprovado',            label: STATUS_ANALISE_LABELS.reprovado            },
 ];
+
+const FILTROS_FATURADO: Array<{ value: FiltroFaturado; label: string }> = [
+  { value: 'todos',  label: 'Todos'        },
+  { value: 'com_nf', label: 'Com NF'       },
+  { value: 'sem_nf', label: 'Sem NF'       },
+];
+
+const FILTROS_PERIODO: Array<{ value: FiltroPeriodo; label: string }> = [
+  { value: 'todos',  label: 'Todo período' },
+  { value: '7d',     label: '7 dias'       },
+  { value: '15d',    label: '15 dias'      },
+  { value: '30d',    label: '30 dias'      },
+  { value: '60d',    label: '60 dias'      },
+  { value: 'custom', label: 'Personalizado'},
+];
+
+function diasAtras(n: number): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+function hojeIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 function formatRelative(date: Date): string {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
@@ -51,10 +80,33 @@ interface Props {
 export function DescontosPage({ user }: Props) {
   const { data, loading, refreshing, error, updatedAt, refresh } = useDescontos();
 
-  const [busca, setBusca]               = useState('');
-  const [filtro, setFiltro]             = useState<FiltroStatus>('todos');
-  const [pedidoAberto, setPedidoAberto] = useState<string | null>(null);
-  const [toasts, setToasts]             = useState<ToastState[]>([]);
+  const [busca, setBusca]                 = useState('');
+  const [filtro, setFiltro]               = useState<FiltroStatus>('todos');
+  const [filtroNf, setFiltroNf]           = useState<FiltroFaturado>('todos');
+  const [periodo, setPeriodo]             = useState<FiltroPeriodo>('todos');
+  const [dataDe, setDataDe]               = useState<string>('');
+  const [dataAte, setDataAte]             = useState<string>('');
+  const [pedidoAberto, setPedidoAberto]   = useState<string | null>(null);
+  const [toasts, setToasts]               = useState<ToastState[]>([]);
+
+  const handlePeriodo = (p: FiltroPeriodo) => {
+    setPeriodo(p);
+    if (p === 'custom') {
+      if (!dataAte) setDataAte(hojeIso());
+      if (!dataDe)  setDataDe(diasAtras(30));
+    } else if (p === 'todos') {
+      setDataDe(''); setDataAte('');
+    } else {
+      const dias = { '7d': 7, '15d': 15, '30d': 30, '60d': 60 }[p];
+      setDataDe(diasAtras(dias));
+      setDataAte(hojeIso());
+    }
+  };
+
+  const rangeAtivo = useMemo(() => {
+    if (periodo === 'todos') return null;
+    return { de: dataDe || null, ate: dataAte || null };
+  }, [periodo, dataDe, dataAte]);
 
   const pushToast = (kind: ToastState['kind'], msg: string) => {
     const id = Date.now() + Math.random();
@@ -62,22 +114,39 @@ export function DescontosPage({ user }: Props) {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
   };
 
+  /** Recorta a base pelo intervalo de data e NF — usado tanto pelos KPIs quanto pela lista. */
+  const baseFiltrada = useMemo<PedidoDesconto[]>(() => {
+    return data
+      .filter(p => {
+        if (!rangeAtivo) return true;
+        const d = (p.data_solicitacao ?? '').slice(0, 10);
+        if (rangeAtivo.de  && d < rangeAtivo.de)  return false;
+        if (rangeAtivo.ate && d > rangeAtivo.ate) return false;
+        return true;
+      })
+      .filter(p => {
+        if (filtroNf === 'todos') return true;
+        const fat = isFaturado(p.status_pedido);
+        return filtroNf === 'com_nf' ? fat : !fat;
+      });
+  }, [data, rangeAtivo, filtroNf]);
+
   const counts = useMemo(() => {
     const acc: Record<StatusAnalise | 'total', number> = {
-      total: data.length,
+      total: baseFiltrada.length,
       pendente: 0,
       em_analise: 0,
       aguardando_aprovacao: 0,
       aprovado: 0,
       reprovado: 0,
     };
-    data.forEach(p => { acc[p.status_analise]++; });
+    baseFiltrada.forEach(p => { acc[p.status_analise]++; });
     return acc;
-  }, [data]);
+  }, [baseFiltrada]);
 
   const filtered = useMemo<PedidoDesconto[]>(() => {
     const q = busca.trim().toLowerCase();
-    return data
+    return baseFiltrada
       .filter(p => filtro === 'todos' || p.status_analise === filtro)
       .filter(p => {
         if (!q) return true;
@@ -88,7 +157,7 @@ export function DescontosPage({ user }: Props) {
           (p.nome_vendedor ?? '').toLowerCase().includes(q)
         );
       });
-  }, [data, filtro, busca]);
+  }, [baseFiltrada, filtro, busca]);
 
   if (loading) {
     return (
@@ -147,19 +216,74 @@ export function DescontosPage({ user }: Props) {
         onChange={e => setBusca(e.target.value)}
       />
 
-      <div className="dsc-filter-row">
-        {FILTROS_STATUS.map(f => (
-          <button
-            key={f.value}
-            className={`dsc-pill ${filtro === f.value ? 'dsc-pill--active' : ''}`}
-            onClick={() => setFiltro(f.value)}
-          >
-            {f.label}
-            <span className="dsc-pill__count">
-              {f.value === 'todos' ? counts.total : counts[f.value]}
-            </span>
-          </button>
-        ))}
+      <div className="dsc-filter-group">
+        <div className="dsc-filter-group__label">Período</div>
+        <div className="dsc-filter-row">
+          {FILTROS_PERIODO.map(f => (
+            <button
+              key={f.value}
+              className={`dsc-pill ${periodo === f.value ? 'dsc-pill--active' : ''}`}
+              onClick={() => handlePeriodo(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {periodo === 'custom' && (
+          <div className="dsc-date-range">
+            <label className="dsc-date-range__field">
+              <span>De</span>
+              <input
+                type="date"
+                className="dsc-date-input"
+                value={dataDe}
+                onChange={e => setDataDe(e.target.value)}
+              />
+            </label>
+            <label className="dsc-date-range__field">
+              <span>Até</span>
+              <input
+                type="date"
+                className="dsc-date-input"
+                value={dataAte}
+                onChange={e => setDataAte(e.target.value)}
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="dsc-filter-group">
+        <div className="dsc-filter-group__label">Faturamento</div>
+        <div className="dsc-filter-row">
+          {FILTROS_FATURADO.map(f => (
+            <button
+              key={f.value}
+              className={`dsc-pill ${filtroNf === f.value ? 'dsc-pill--active' : ''}`}
+              onClick={() => setFiltroNf(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="dsc-filter-group">
+        <div className="dsc-filter-group__label">Status da análise</div>
+        <div className="dsc-filter-row">
+          {FILTROS_STATUS.map(f => (
+            <button
+              key={f.value}
+              className={`dsc-pill ${filtro === f.value ? 'dsc-pill--active' : ''}`}
+              onClick={() => setFiltro(f.value)}
+            >
+              {f.label}
+              <span className="dsc-pill__count">
+                {f.value === 'todos' ? counts.total : counts[f.value]}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {filtered.length === 0 ? (

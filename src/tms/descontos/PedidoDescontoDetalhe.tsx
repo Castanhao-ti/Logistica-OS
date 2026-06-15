@@ -13,6 +13,9 @@ import {
   fmtBRL,
   fmtData,
   fmtDataHora,
+  fmtPerc,
+  isFaturado,
+  percDesconto,
   podeDecidir,
   podeOperar,
   STATUS_ANALISE_LABELS,
@@ -109,10 +112,14 @@ export function PedidoDescontoDetalhe({
           <div className="dsc-detail__title-area">
             <div className="dsc-detail__pedido">
               Pedido #{data?.cabecalho?.numero_pedido_cliente ?? pedidoKey}
+              <span className="dsc-detail__pfv">PFV {pedidoKey}</span>
               {data && (
                 <span className={`dsc-status dsc-status--${data.analise.status}`}>
                   {STATUS_ANALISE_LABELS[data.analise.status]}
                 </span>
+              )}
+              {data && isFaturado(data.cabecalho?.status_pedido) && (
+                <span className="dsc-tag dsc-tag--nf">NF</span>
               )}
             </div>
             <div className="dsc-detail__sub">
@@ -248,6 +255,9 @@ function CabecalhoCard({ detalhe }: { detalhe: DetalhePedido }) {
             <dt>Desconto</dt>
             <dd className={cab.valor_desconto < 0 ? 'negative' : ''}>
               {fmtBRL(cab.valor_desconto)}
+              <span className="dsc-summary__perc">
+                {fmtPerc(percDesconto(cab.valor_pedido, cab.valor_desconto, cab.valor_acrescimo))}
+              </span>
             </dd>
           </div>
           <div className="dsc-summary__line">
@@ -397,7 +407,8 @@ function ItensSection({
                 <th className="num">Qtd</th>
                 <th className="num">Preço tabela</th>
                 <th className="num">Preço aplicado</th>
-                <th className="num">Variação</th>
+                <th className="num">Variação un.</th>
+                <th className="num">Variação total</th>
                 <th className="num">Preço final</th>
                 <th className="num">Custo unit.</th>
                 <th className="num">Total item</th>
@@ -424,6 +435,7 @@ function LinhaItem({ item }: { item: ItemPedido }) {
     item.perc_margem_item == null
       ? '—'
       : `${item.perc_margem_item.toFixed(1).replace('.', ',')}%`;
+  const variacaoTotal = item.quantidade * item.preco_variacao;
 
   return (
     <tr>
@@ -436,6 +448,9 @@ function LinhaItem({ item }: { item: ItemPedido }) {
       <td className="num">{fmtBRL(item.preco_aplicado)}</td>
       <td className={`num ${variacaoNegativa ? 'neg' : variacaoPositiva ? 'pos' : ''}`}>
         {fmtBRL(item.preco_variacao)}
+      </td>
+      <td className={`num ${variacaoNegativa ? 'neg' : variacaoPositiva ? 'pos' : ''}`}>
+        {fmtBRL(variacaoTotal)}
       </td>
       <td className="num">{fmtBRL(item.preco_final)}</td>
       <td className="num">{fmtBRL(item.custo_unitario)}</td>

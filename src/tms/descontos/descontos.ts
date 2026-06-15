@@ -169,3 +169,21 @@ export const tomMargem = (perc: number | null | undefined): TomMargem => {
   if (perc < 15) return 'baixa';
   return 'ok';
 };
+
+/** % do desconto sobre o preço tabela: |desc| / (valor_pedido - desc - acresc). */
+export const percDesconto = (
+  valor_pedido: number,
+  valor_desconto: number,
+  valor_acrescimo: number,
+): number | null => {
+  const semDesc = valor_pedido - valor_desconto - valor_acrescimo;
+  if (semDesc <= 0) return null;
+  return (Math.abs(valor_desconto) / semDesc) * 100;
+};
+
+export const fmtPerc = (perc: number | null | undefined, casas = 1) =>
+  perc == null ? '—' : `${perc.toFixed(casas).replace('.', ',')}%`;
+
+export const STATUS_FATURADO = 'Faturado por Nota Fiscal';
+export const isFaturado = (status_pedido: string | null | undefined) =>
+  status_pedido === STATUS_FATURADO;
