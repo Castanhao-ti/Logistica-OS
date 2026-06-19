@@ -55,7 +55,7 @@ function acoesDisponiveis(
       acoes.push({
         acao: 'iniciar_analise',
         rotulo: 'Iniciar análise',
-        classe: 'dsc-btn dsc-btn--secondary',
+        classe: 'dsc-btn dsc-btn--success',
         icone: <Play size={14} />,
       });
     }
