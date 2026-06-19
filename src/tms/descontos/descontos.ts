@@ -137,6 +137,17 @@ export const STATUS_ANALISE_LABELS: Record<StatusAnalise, string> = {
   reprovado: 'Reprovado',
 };
 
+export const STATUS_ANALISE_TONE: Record<
+  StatusAnalise,
+  'pendente' | 'transito' | 'prioritario' | 'entregue' | 'atrasado'
+> = {
+  pendente: 'pendente',
+  em_analise: 'transito',
+  aguardando_aprovacao: 'prioritario',
+  aprovado: 'entregue',
+  reprovado: 'atrasado',
+};
+
 export const fmtBRL = (v: number | null | undefined) =>
   v == null
     ? '—'
@@ -170,6 +181,16 @@ export const tomMargem = (perc: number | null | undefined): TomMargem => {
   return 'ok';
 };
 
+export const MARGEM_TONE: Record<
+  TomMargem,
+  'entregue' | 'pendente' | 'atrasado' | 'rascunho'
+> = {
+  ok: 'entregue',
+  baixa: 'pendente',
+  negativa: 'atrasado',
+  na: 'rascunho',
+};
+
 /** % do desconto sobre o preço tabela: |desc| / (valor_pedido - desc - acresc). */
 export const percDesconto = (
   valor_pedido: number,
@@ -187,6 +208,45 @@ export const fmtPerc = (perc: number | null | undefined, casas = 1) =>
 export const STATUS_FATURADO = 'Faturado por Nota Fiscal';
 export const isFaturado = (status_pedido: string | null | undefined) =>
   status_pedido === STATUS_FATURADO;
+
+/**
+ * Adapta um PedidoDesconto da listagem em um DetalhePedido mínimo,
+ * suficiente para alimentar o AcaoModal sem precisar carregar o detalhe completo.
+ */
+export function asDetalhePedido(p: PedidoDesconto): DetalhePedido {
+  const {
+    status,
+    operador,
+    observacao_operador,
+    gerente,
+    observacao_gerente,
+    solicitado_em,
+    decidido_em,
+    status_analise: _statusAnalise,
+    ...cabecalho
+  } = p;
+  return {
+    pedido_forca_venda_key: Number(p.pedido_forca_venda_key) || 0,
+    cabecalho,
+    analise: {
+      status,
+      operador,
+      observacao_operador,
+      gerente,
+      observacao_gerente,
+      solicitado_em,
+      decidido_em,
+    },
+    totais: {
+      qtde_itens: 0,
+      qtde_itens_desconto: 0,
+      qtde_itens_acrescimo: 0,
+      valor_desconto: p.valor_desconto,
+      valor_acrescimo: p.valor_acrescimo,
+    },
+    itens: { com_desconto: [], com_acrescimo: [], sem_variacao: [] },
+  };
+}
 
 /** Iniciais (até 2) para avatar do vendedor. */
 export const iniciaisVendedor = (nome: string | null | undefined): string => {

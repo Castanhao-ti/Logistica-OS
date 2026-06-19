@@ -6,6 +6,10 @@ import CarrierTag from '../components/CarrierTag';
 import BatchActionBar from '../components/BatchActionBar';
 import KpiRow from '../components/KpiRow';
 import NotasFiscaisTable from '../components/NotasFiscaisTable';
+import { StatusChip, type StatusTone } from '../components/StatusChip';
+import { SkeletonRow } from '../components/Skeleton';
+import { EmptyState } from '../components/EmptyState';
+import { Package } from 'lucide-react';
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -18,15 +22,15 @@ interface Props {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, [string, string]> = {
-    pending: ['tms-badge--pending', 'Aguardando'],
-    approved: ['tms-badge--approved', '✓ Aprovado'],
-    in_load: ['tms-badge--in-load', 'Em Carga'],
-    alert_value: ['tms-badge--alert', '⚠ Alto Valor'],
-    forced_cep: ['tms-badge--forced', 'Rota Exclusiva'],
+  const map: Record<string, [StatusTone, string]> = {
+    pending: ['pendente', 'Aguardando'],
+    approved: ['entregue', '✓ Aprovado'],
+    in_load: ['transito', 'Em Carga'],
+    alert_value: ['prioritario', '⚠ Alto Valor'],
+    forced_cep: ['prioritario', 'Rota Exclusiva'],
   };
-  const [cls, label] = map[status] ?? ['tms-badge--pending', status];
-  return <span className={`tms-badge ${cls}`}>{label}</span>;
+  const [tone, label] = map[status] ?? ['pendente', status];
+  return <StatusChip tone={tone}>{label}</StatusChip>;
 }
 
 export default function OperacaoPanel({ onCountChange }: Props) {
@@ -302,17 +306,19 @@ export default function OperacaoPanel({ onCountChange }: Props) {
 
       <div className="tms-table-wrap">
         {loading ? (
-          <div className="tms-loading">Carregando pedidos...</div>
+          <table className="tms-table">
+            <tbody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonRow key={i} cells={5} />
+              ))}
+            </tbody>
+          </table>
         ) : filtered.length === 0 ? (
-          <div className="tms-empty">
-            <div className="tms-empty__icon">📦</div>
-            <div className="tms-empty__title">
-              {hasFilters ? 'Nenhum resultado para os filtros aplicados' : 'Nenhum pedido encontrado'}
-            </div>
-            <div className="tms-empty__sub">
-              {hasFilters ? 'Tente ajustar os filtros' : 'Aguarde a próxima sincronização com o Bluesoft'}
-            </div>
-          </div>
+          <EmptyState
+            icon={<Package size={22} />}
+            title={hasFilters ? 'Nenhum resultado para os filtros aplicados' : 'Nenhum pedido encontrado'}
+            description={hasFilters ? 'Tente ajustar os filtros' : 'Aguarde a próxima sincronização com o Bluesoft'}
+          />
         ) : tab === 'invoices' ? (
           <NotasFiscaisTable orders={filtered} />
         ) : (
@@ -414,9 +420,9 @@ export default function OperacaoPanel({ onCountChange }: Props) {
                             </button>
                           </div>
                         ) : isForced ? (
-                          <span className="tms-badge tms-badge--forced">Bloqueado</span>
+                          <StatusChip tone="atrasado">Bloqueado</StatusChip>
                         ) : isDone ? (
-                          <span className="tms-badge tms-badge--approved">✓ Aprovado</span>
+                          <StatusChip tone="entregue">✓ Aprovado</StatusChip>
                         ) : (
                           <div className="tms-action-cell">
                             <select
@@ -447,7 +453,7 @@ export default function OperacaoPanel({ onCountChange }: Props) {
                             {order.nome_transportadora_nf}
                           </span>
                         ) : (
-                          <span className="tms-badge tms-badge--pending">—</span>
+                          <StatusChip tone="rascunho">—</StatusChip>
                         )}
                       </td>
                     )}

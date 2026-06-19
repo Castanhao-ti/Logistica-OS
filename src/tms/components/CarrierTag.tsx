@@ -1,4 +1,5 @@
 import React from 'react';
+import { StatusChip } from './StatusChip';
 
 interface Props {
   carrierId: string | null;
@@ -20,7 +21,7 @@ export default function CarrierTag({ carrierName, carrierColor, explanation, rou
   }
 
   if (!carrierName) {
-    return <span className="tms-badge tms-badge--pending">—</span>;
+    return <StatusChip tone="rascunho">—</StatusChip>;
   }
 
   const showUnit = viamexUnit && carrierName.toLowerCase().includes('viamex');

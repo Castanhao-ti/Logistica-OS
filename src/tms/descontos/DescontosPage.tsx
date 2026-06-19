@@ -1,24 +1,33 @@
 import React, { useMemo, useState } from 'react';
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowUpDown,
   CalendarDays,
   CheckCircle2,
+  Clock,
   Inbox,
-  Loader2,
+  Receipt,
   RefreshCw,
   Search,
   SlidersHorizontal,
   Sparkles,
   XCircle,
 } from 'lucide-react';
-import { PedidoDescontoCard } from './PedidoDescontoCard';
+import { PedidoDescontoRow } from './PedidoDescontoRow';
+import { AcaoModal } from './AcaoModal';
 import { PedidoDescontoDetalhe } from './PedidoDescontoDetalhe';
 import { useDescontos } from './useDescontos';
+import { KpiCard } from '../components/KpiCard';
+import { SkeletonKpiCard, SkeletonRow } from '../components/Skeleton';
+import { EmptyState } from '../components/EmptyState';
 import {
+  asDetalhePedido,
   fmtBRL,
   isFaturado,
+  podeDecidir,
   STATUS_ANALISE_LABELS,
+  type AcaoAnalise,
   type PedidoDesconto,
   type SortKey,
   type StatusAnalise,
@@ -145,7 +154,10 @@ function PedidosTab({ user }: { user: SessionUser }) {
   const [dataAte, setDataAte]           = useState('');
   const [maisFiltros, setMaisFiltros]   = useState(false);
   const [pedidoAberto, setPedidoAberto] = useState<string | null>(null);
+  const [acaoQuick, setAcaoQuick]       = useState<{ pedido: PedidoDesconto; acao: AcaoAnalise } | null>(null);
   const [toasts, setToasts]             = useState<ToastState[]>([]);
+
+  const canDecide = podeDecidir(user.perfil);
 
   const pushToast = (kind: ToastState['kind'], msg: string) => {
     const id = Date.now() + Math.random();
@@ -258,11 +270,51 @@ function PedidosTab({ user }: { user: SessionUser }) {
     [filtered],
   );
 
+  /* KPIs workflow (sobre baseFiltrada — refletem o recorte de data/NF) */
+  const kpis = useMemo(() => {
+    const pendentes = ['pendente', 'em_analise', 'aguardando_aprovacao'] as const;
+    const hojeIsoDia = new Date().toISOString().slice(0, 10);
+
+    const aguardando = baseFiltrada.filter(p =>
+      (pendentes as readonly string[]).includes(p.status_analise),
+    );
+    const valorEmRisco = aguardando.reduce(
+      (acc, p) => acc + Math.abs(p.valor_desconto),
+      0,
+    );
+    const aprovadosHoje = baseFiltrada.filter(p =>
+      p.status_analise === 'aprovado'
+      && p.decidido_em
+      && p.decidido_em.slice(0, 10) === hojeIsoDia,
+    ).length;
+    const ticketMedio = baseFiltrada.length
+      ? baseFiltrada.reduce((acc, p) => acc + p.valor_pedido, 0) / baseFiltrada.length
+      : 0;
+
+    return {
+      aguardando: aguardando.length,
+      valorEmRisco,
+      aprovadosHoje,
+      ticketMedio,
+    };
+  }, [baseFiltrada]);
+
   if (loading) {
     return (
-      <div className="dsc-loading">
-        <Loader2 size={28} className="dsc-spin" />
-        <p style={{ fontSize: 13 }}>Carregando pedidos com desconto…</p>
+      <div className="dsc-tab-content">
+        <div className="kpi-grid dsc-kpi-row">
+          <SkeletonKpiCard />
+          <SkeletonKpiCard />
+          <SkeletonKpiCard />
+          <SkeletonKpiCard />
+        </div>
+        <table className="tms-table">
+          <tbody>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonRow key={i} cells={9} widths={['70%', '50%', '85%', '70%', '60%', '60%', '40%', '60%', '40%']} />
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -293,27 +345,46 @@ function PedidosTab({ user }: { user: SessionUser }) {
             )}
           </p>
         </div>
-        <div className="dsc-kpi-row">
-          <div className="dsc-kpi">
-            <span className="dsc-kpi__label">Pedidos</span>
-            <span className="dsc-kpi__value">{filtered.length}</span>
-          </div>
-          <div className="dsc-kpi">
-            <span className="dsc-kpi__label">Desconto total</span>
-            <span className="dsc-kpi__value dsc-kpi__value--accent">
-              {fmtBRL(-descontoAcumulado)}
-            </span>
-          </div>
-          <button
-            className="dsc-icon-btn dsc-icon-btn--lg"
-            onClick={refresh}
-            disabled={refreshing}
-            title="Atualizar"
-            aria-label="Atualizar"
-          >
-            <RefreshCw size={16} className={refreshing ? 'dsc-spin' : ''} />
-          </button>
-        </div>
+        <button
+          className="dsc-icon-btn dsc-icon-btn--lg"
+          onClick={refresh}
+          disabled={refreshing}
+          title="Atualizar"
+          aria-label="Atualizar"
+        >
+          <RefreshCw size={16} className={refreshing ? 'dsc-spin' : ''} />
+        </button>
+      </div>
+
+      {/* KPIs */}
+      <div className="kpi-grid dsc-kpi-row">
+        <KpiCard
+          label="Pedidos aguardando"
+          value={String(kpis.aguardando)}
+          reference={`de ${baseFiltrada.length} no período`}
+          icon={<Clock size={18} />}
+          iconColor="#F59E0B"
+        />
+        <KpiCard
+          label="Valor em risco"
+          value={fmtBRL(-kpis.valorEmRisco)}
+          reference="desconto pendente"
+          icon={<AlertTriangle size={18} />}
+          iconColor="#EF4444"
+        />
+        <KpiCard
+          label="Aprovados hoje"
+          value={String(kpis.aprovadosHoje)}
+          icon={<CheckCircle2 size={18} />}
+          iconColor="#10B981"
+        />
+        <KpiCard
+          label="Ticket médio"
+          value={fmtBRL(kpis.ticketMedio)}
+          reference={`${filtered.length} na seleção · ${fmtBRL(-descontoAcumulado)} desc.`}
+          icon={<Receipt size={18} />}
+          iconColor="#2D4A3E"
+        />
       </div>
 
       {/* Filtros principais */}
@@ -458,27 +529,44 @@ function PedidosTab({ user }: { user: SessionUser }) {
         </div>
       )}
 
-      {/* Grid de cards */}
+      {/* Tabela de pedidos */}
       {filtered.length === 0 ? (
-        <div className="dsc-empty">
-          <Inbox size={28} />
-          <p style={{ fontSize: 13 }}>Nenhum pedido encontrado com esses filtros.</p>
-          {busca && (
-            <button className="dsc-empty__link" onClick={() => setBusca('')}>
-              Limpar busca
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon={<Inbox size={22} />}
+          title="Nenhum pedido encontrado com esses filtros."
+          actionLabel={busca ? 'Limpar busca' : undefined}
+          onAction={busca ? () => setBusca('') : undefined}
+        />
       ) : (
-        <div className="dsc-grid">
-          {filtered.map(p => (
-            <PedidoDescontoCard
-              key={p.pedido_forca_venda_key}
-              pedido={p}
-              selected={pedidoAberto === p.pedido_forca_venda_key}
-              onClick={() => setPedidoAberto(p.pedido_forca_venda_key)}
-            />
-          ))}
+        <div className="tms-table-wrap">
+          <table className="tms-table">
+            <thead>
+              <tr>
+                <th>Nº Pedido</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th className="num">Total</th>
+                <th className="num">Desconto</th>
+                <th>Margem</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(p => (
+                <PedidoDescontoRow
+                  key={p.pedido_forca_venda_key}
+                  pedido={p}
+                  selected={pedidoAberto === p.pedido_forca_venda_key}
+                  canDecide={canDecide}
+                  onClick={() => setPedidoAberto(p.pedido_forca_venda_key)}
+                  onAprovar={pp => setAcaoQuick({ pedido: pp, acao: 'aprovar' })}
+                  onReprovar={pp => setAcaoQuick({ pedido: pp, acao: 'reprovar' })}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -489,6 +577,27 @@ function PedidosTab({ user }: { user: SessionUser }) {
           onClose={() => setPedidoAberto(null)}
           onAcaoOk={msg => {
             pushToast('success', msg);
+            refresh();
+          }}
+        />
+      )}
+
+      {acaoQuick && (
+        <AcaoModal
+          pedido={asDetalhePedido(acaoQuick.pedido)}
+          acao={acaoQuick.acao}
+          usuario={user.nome}
+          observacaoObrigatoria={acaoQuick.acao === 'reprovar'}
+          onClose={() => setAcaoQuick(null)}
+          onSuccess={() => {
+            const acao = acaoQuick.acao;
+            setAcaoQuick(null);
+            pushToast(
+              'success',
+              acao === 'aprovar'
+                ? 'Pedido aprovado com sucesso.'
+                : 'Pedido reprovado com sucesso.',
+            );
             refresh();
           }}
         />

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Order } from '../types';
+import { StatusChip, type StatusTone } from './StatusChip';
 
 const fmt = (v: number | null) =>
   v != null ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v) : '—';
@@ -10,16 +11,17 @@ const fmtDate = (v: string | null) =>
 const fmtDateTime = (v: string | null) =>
   v ? new Date(v).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
-function statusTone(status: string | null): string {
-  if (!status) return 'tms-badge--pending';
+function statusTone(status: string | null): StatusTone {
+  if (!status) return 'pendente';
   const s = status.toLowerCase();
-  if (s.includes('cancel') || s.includes('extrav') || s.includes('avari') || s.includes('denegad')) return 'tms-badge--alert';
-  if (s.includes('autoriz') || s.includes('entreg') || s.includes('realizad') || s.includes('conclu') || s.includes('fatur')) return 'tms-badge--approved';
-  return 'tms-badge--pending';
+  if (s.includes('cancel') || s.includes('extrav') || s.includes('avari') || s.includes('denegad')) return 'atrasado';
+  if (s.includes('autoriz') || s.includes('entreg') || s.includes('realizad') || s.includes('conclu') || s.includes('fatur')) return 'entregue';
+  if (s.includes('trânsit') || s.includes('transit') || s.includes('saiu') || s.includes('coleta')) return 'transito';
+  return 'pendente';
 }
 
 function StatusBadge({ status, fallback }: { status: string | null; fallback: string }) {
-  return <span className={`tms-badge ${statusTone(status)}`}>{status ?? fallback}</span>;
+  return <StatusChip tone={statusTone(status)}>{status ?? fallback}</StatusChip>;
 }
 
 interface Props {
@@ -85,7 +87,7 @@ export default function NotasFiscaisTable({ orders }: Props) {
                   <span className="tms-cell-location">{fmtDateTime(order.ultima_ocorrencia_data)}</span>
                 </>
               ) : (
-                <span className="tms-badge tms-badge--pending">Sem rastreio</span>
+                <StatusChip tone="rascunho">Sem rastreio</StatusChip>
               )}
             </td>
           </tr>

@@ -31,37 +31,9 @@
   gap: 8px;
 }
 
-/* ── KPI Grid ── */
+/* ── KPI Grid (espaçamento específico da página) ── */
 .usr-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
   margin-bottom: 20px;
-}
-@media (max-width: 640px) {
-  .usr-kpi-grid { grid-template-columns: 1fr; }
-}
-.usr-kpi-card {
-  background: var(--lsw-surface);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-card);
-  text-align: center;
-  border: 1px solid var(--lsw-border);
-}
-.usr-kpi-card__value {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-}
-.usr-kpi-card__value--primary { color: var(--lsw-green); }
-.usr-kpi-card__value--success { color: #15803D; }
-.usr-kpi-card__value--muted   { color: var(--lsw-text-muted); }
-.usr-kpi-card__label {
-  font-size: 12px;
-  color: var(--lsw-text-muted);
-  margin-top: 6px;
 }
 
 /* ── Search & Filters ── */

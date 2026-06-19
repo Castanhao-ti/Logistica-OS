@@ -1,8 +1,11 @@
 import { useState, useMemo } from 'react';
-import { UserPlus, Inbox, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { UserPlus, Inbox, AlertCircle, RefreshCw, Users, UserCheck, UserX } from 'lucide-react';
 import { useUsuarios } from './useUsuarios';
 import { UsuarioCard } from './UsuarioCard';
 import { UsuarioFormModal } from './UsuarioFormModal';
+import { KpiCard } from '../components/KpiCard';
+import { SkeletonKpiCard, SkeletonRow } from '../components/Skeleton';
+import { EmptyState } from '../components/EmptyState';
 import type { PerfilUsuario } from './usuarios';
 import './usuarios.css';
 
@@ -60,9 +63,19 @@ export function UsuariosPage() {
 
   if (loading) {
     return (
-      <div className="usr-loading">
-        <Loader2 size={28} className="usr-spin" />
-        <p style={{ fontSize: 13 }}>Carregando usuários...</p>
+      <div>
+        <div className="kpi-grid kpi-grid--3 usr-kpi-grid">
+          <SkeletonKpiCard />
+          <SkeletonKpiCard />
+          <SkeletonKpiCard />
+        </div>
+        <table className="tms-table">
+          <tbody>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonRow key={i} cells={5} />
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -104,19 +117,25 @@ export function UsuariosPage() {
       </div>
 
       {/* KPIs */}
-      <div className="usr-kpi-grid">
-        <div className="usr-kpi-card">
-          <div className="usr-kpi-card__value usr-kpi-card__value--primary">{data.length}</div>
-          <div className="usr-kpi-card__label">Total de usuários</div>
-        </div>
-        <div className="usr-kpi-card">
-          <div className="usr-kpi-card__value usr-kpi-card__value--success">{totalAtivos}</div>
-          <div className="usr-kpi-card__label">Ativos</div>
-        </div>
-        <div className="usr-kpi-card">
-          <div className="usr-kpi-card__value usr-kpi-card__value--muted">{totalInativos}</div>
-          <div className="usr-kpi-card__label">Inativos</div>
-        </div>
+      <div className="kpi-grid kpi-grid--3 usr-kpi-grid">
+        <KpiCard
+          label="Total de usuários"
+          value={String(data.length)}
+          icon={<Users size={18} />}
+          iconColor="#2D4A3E"
+        />
+        <KpiCard
+          label="Ativos"
+          value={String(totalAtivos)}
+          icon={<UserCheck size={18} />}
+          iconColor="#10B981"
+        />
+        <KpiCard
+          label="Inativos"
+          value={String(totalInativos)}
+          icon={<UserX size={18} />}
+          iconColor="#9CA3AF"
+        />
       </div>
 
       {/* Busca */}
@@ -155,15 +174,12 @@ export function UsuariosPage() {
 
       {/* Lista */}
       {filtered.length === 0 ? (
-        <div className="usr-empty">
-          <Inbox size={28} />
-          <p style={{ fontSize: 13 }}>Nenhum usuário encontrado.</p>
-          {busca && (
-            <button className="usr-empty__link" onClick={() => setBusca('')}>
-              Limpar busca
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon={<Inbox size={22} />}
+          title="Nenhum usuário encontrado."
+          actionLabel={busca ? 'Limpar busca' : undefined}
+          onAction={busca ? () => setBusca('') : undefined}
+        />
       ) : (
         <div className="usr-list">
           {filtered.map(u => (

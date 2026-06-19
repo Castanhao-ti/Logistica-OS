@@ -4,7 +4,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CheckCircle2,
-  Loader2,
   Minus,
   Play,
   RefreshCw,
@@ -22,7 +21,9 @@ import {
   percDesconto,
   podeDecidir,
   podeOperar,
+  MARGEM_TONE,
   STATUS_ANALISE_LABELS,
+  STATUS_ANALISE_TONE,
   tomMargem,
   type AcaoAnalise,
   type DetalhePedido,
@@ -31,6 +32,8 @@ import {
 import { useDescontoDetalhe } from './useDescontoDetalhe';
 import { AcaoModal } from './AcaoModal';
 import type { SessionUser } from '../auth/auth';
+import { StatusChip } from '../components/StatusChip';
+import { SkeletonKpiCard, SkeletonRow } from '../components/Skeleton';
 
 interface AcaoConfig {
   acao: AcaoAnalise;
@@ -123,12 +126,12 @@ export function PedidoDescontoDetalhe({
               </h2>
               <span className="dsc-card__pfv">PFV {pedidoKey}</span>
               {data && (
-                <span className={`dsc-status dsc-status--${data.analise.status}`}>
+                <StatusChip tone={STATUS_ANALISE_TONE[data.analise.status]}>
                   {STATUS_ANALISE_LABELS[data.analise.status]}
-                </span>
+                </StatusChip>
               )}
               {data && isFaturado(data.cabecalho?.status_pedido) && (
-                <span className="dsc-tag dsc-tag--nf">NF</span>
+                <StatusChip tone="transito" title="Faturado com NF">NF</StatusChip>
               )}
             </div>
             <div className="dsc-sheet__sub">
@@ -162,9 +165,19 @@ export function PedidoDescontoDetalhe({
         {/* Corpo */}
         <div className="dsc-sheet__body">
           {loading && (
-            <div className="dsc-loading">
-              <Loader2 size={26} className="dsc-spin" />
-              <p style={{ fontSize: 13 }}>Carregando detalhe…</p>
+            <div className="dsc-sheet__skeleton">
+              <div className="kpi-grid kpi-grid--3">
+                <SkeletonKpiCard />
+                <SkeletonKpiCard />
+                <SkeletonKpiCard />
+              </div>
+              <table className="tms-table">
+                <tbody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SkeletonRow key={i} cells={5} />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -430,7 +443,7 @@ function LinhaItem({ item }: { item: ItemPedido }) {
         {fmtBRL(variacaoTotal)}
       </td>
       <td className="num">
-        <span className={`dsc-margem dsc-margem--${margemTom}`}>{margemFmt}</span>
+        <StatusChip tone={MARGEM_TONE[margemTom]}>{margemFmt}</StatusChip>
       </td>
     </tr>
   );

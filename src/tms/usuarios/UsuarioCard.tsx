@@ -3,6 +3,7 @@ import { Pencil, Trash2, ShieldCheck, ShieldOff, RotateCcw } from 'lucide-react'
 import { atualizarUsuario, deletarUsuario, resetarSenha, type Usuario } from './usuarios';
 import { PerfilPill } from './PerfilPill';
 import { UsuarioFormModal } from './UsuarioFormModal';
+import { StatusChip } from '../components/StatusChip';
 
 interface Props {
   usuario: Usuario;
@@ -84,9 +85,9 @@ export function UsuarioCard({ usuario, onRefresh }: Props) {
 
         <div className="usr-badges">
           <PerfilPill perfil={usuario.perfil} />
-          <span className={`usr-status ${usuario.ativo ? 'usr-status--active' : 'usr-status--inactive'}`}>
+          <StatusChip tone={usuario.ativo ? 'entregue' : 'rascunho'}>
             {usuario.ativo ? 'Ativo' : 'Inativo'}
-          </span>
+          </StatusChip>
         </div>
 
         <p className="usr-last-access">

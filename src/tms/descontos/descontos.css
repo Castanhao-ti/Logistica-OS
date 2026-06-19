@@ -51,9 +51,9 @@
 .dsc-subheader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 32px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 .dsc-subheader__title-area { min-width: 0; }
@@ -77,36 +77,17 @@
   font-size: 12px;
 }
 
-/* KPIs verticais (label em cima, valor em baixo) */
+/* KPI row específico da aba Pedidos com desconto */
 .dsc-kpi-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 28px;
+  margin-bottom: 20px;
 }
-.dsc-kpi {
+
+/* Skeleton dentro do sheet de detalhe */
+.dsc-sheet__skeleton {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  text-align: right;
-  min-width: 0;
+  gap: 16px;
 }
-.dsc-kpi__label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--lsw-text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.dsc-kpi__value {
-  font-family: var(--font-mono);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--lsw-text);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-.dsc-kpi__value--accent { color: var(--lsw-orange); }
 
 
 /* ────────── Filter bar ────────── */
@@ -136,7 +117,7 @@
   height: 36px;
   padding: 0 14px 0 36px;
   border: 1px solid var(--lsw-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--lsw-text);
@@ -166,9 +147,9 @@
 .dsc-select__field {
   width: 100%;
   height: 36px;
-  padding: 0 28px 0 12px;
+  padding: 0 28px 0 14px;
   border: 1px solid var(--lsw-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--lsw-text);
@@ -275,9 +256,9 @@
 }
 .dsc-date-input {
   height: 32px;
-  padding: 0 10px;
+  padding: 0 14px;
   border: 1px solid var(--lsw-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--lsw-text);
@@ -298,9 +279,9 @@
   align-items: center;
   gap: 6px;
   height: 36px;
-  padding: 0 8px 0 10px;
+  padding: 0 8px 0 14px;
   border: 1px solid var(--lsw-border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: var(--lsw-surface);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -348,16 +329,109 @@
 
 
 /* ════════════════════════════════════════════════════════════════
-   Grid de cards
+   Tabela de pedidos com desconto
    ════════════════════════════════════════════════════════════════ */
-.dsc-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+.tms-table th.num,
+.tms-table td.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
-@media (min-width: 640px)  { .dsc-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1024px) { .dsc-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1600px) { .dsc-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.dsc-row { cursor: pointer; }
+.dsc-row:focus-visible {
+  outline: 2px solid var(--lsw-green);
+  outline-offset: -2px;
+}
+.dsc-row--selected td {
+  background: rgba(44,80,62,0.06) !important;
+  box-shadow: inset 3px 0 0 var(--lsw-green);
+}
+
+.dsc-row__pedido {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dsc-row__numero {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lsw-text);
+  letter-spacing: -0.01em;
+}
+.dsc-row__nf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(55,48,163,0.08);
+  color: #3730A3;
+  border: 1px solid rgba(55,48,163,0.18);
+}
+.dsc-row__vendedor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dsc-row__vendedor-nome {
+  font-size: 12.5px;
+  color: var(--lsw-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+.dsc-row__desconto--negative { color: var(--lsw-orange-dark); }
+
+/* Botões de aprovar/reprovar inline na linha */
+.dsc-row__acoes-cell { width: 88px; white-space: nowrap; }
+.dsc-row__acoes {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.dsc-row__acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  background: transparent;
+}
+.dsc-row__acao--aprovar {
+  color: #15803D;
+  background: rgba(21,128,61,0.10);
+  border-color: rgba(21,128,61,0.20);
+}
+.dsc-row__acao--aprovar:hover {
+  background: #15803D;
+  color: #fff;
+  border-color: #15803D;
+}
+.dsc-row__acao--reprovar {
+  color: #B91C1C;
+  background: rgba(185,28,28,0.10);
+  border-color: rgba(185,28,28,0.22);
+}
+.dsc-row__acao--reprovar:hover {
+  background: #B91C1C;
+  color: #fff;
+  border-color: #B91C1C;
+}
+.dsc-row__acao:focus-visible {
+  outline: 2px solid var(--lsw-green);
+  outline-offset: 2px;
+}
 
 
 /* ────────── Order card ────────── */
@@ -650,7 +724,7 @@
   gap: 6px;
   height: 36px;
   padding: 0 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
@@ -899,8 +973,9 @@
   margin-top: 2px;
 }
 .dsc-vendedor-card__status {
-  color: var(--lsw-text);
-  font-weight: 600;
+  color: #78716C;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* Análise */
@@ -983,8 +1058,8 @@
 .dsc-items-section__empty {
   padding: 16px;
   text-align: center;
-  font-size: 12.5px;
-  color: var(--lsw-text-muted);
+  font-size: 13px;
+  color: #78716C;
 }
 
 .dsc-items-table-wrap { overflow-x: auto; }
