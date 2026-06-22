@@ -3,7 +3,9 @@ import { Settings } from 'lucide-react';
 import OperacaoPanel from './pages/OperacaoPanel';
 import { UsuariosPage } from './usuarios/UsuariosPage';
 import { DescontosPage } from './descontos/DescontosPage';
+import { CrmPage } from './crm/CrmPage';
 import { podeOperar } from './descontos/descontos';
+import { podeVerCrm } from './crm/crm';
 import Sidebar, { type View } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import { EmptyState } from './components/EmptyState';
@@ -13,22 +15,24 @@ import './tms.css';
 
 export default function App() {
   const [user, setUser] = useState<SessionUser | null>(() => getSession());
-  const [view, setView] = useState<View>('tms');
+  const [view, setView] = useState<View>('descontos');
   const [pendingCount, setPendingCount] = useState(0);
 
   if (!user) {
     return (
       <div className="tms-root">
-        <LoginPage onLogin={u => { setUser(u); setView('tms'); }} />
+        <LoginPage onLogin={u => { setUser(u); setView('descontos'); }} />
       </div>
     );
   }
 
   const isAdmin   = user.perfil === 'admin';
   const verDescontos = podeOperar(user.perfil);
+  const verCrm = podeVerCrm(user.perfil);
   const podeView = (v: View): boolean => {
     if (v === 'tms') return true;
     if (v === 'descontos') return verDescontos;
+    if (v === 'crm') return verCrm;
     return isAdmin;
   };
   const activeView: View = podeView(view) ? view : 'tms';
@@ -58,6 +62,7 @@ export default function App() {
           <div className="lsw-content">
             {activeView === 'tms'       && <OperacaoPanel onCountChange={setPendingCount} />}
             {activeView === 'descontos' && verDescontos && <DescontosPage user={user} />}
+            {activeView === 'crm'       && verCrm && <CrmPage user={user} />}
             {activeView === 'usuarios'  && isAdmin && <UsuariosPage />}
             {activeView === 'admin' && isAdmin && (
               <EmptyState

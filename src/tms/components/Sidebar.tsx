@@ -1,10 +1,11 @@
 import React from 'react';
-import { Truck, Settings, LifeBuoy, Users, LogOut, TicketPercent } from 'lucide-react';
+import { Truck, Settings, LifeBuoy, Users, LogOut, TicketPercent, Target } from 'lucide-react';
 import BrandMark from './BrandMark';
 import type { SessionUser } from '../auth/auth';
 import { podeOperar } from '../descontos/descontos';
+import { podeVerCrm } from '../crm/crm';
 
-export type View = 'tms' | 'admin' | 'usuarios' | 'descontos';
+export type View = 'tms' | 'admin' | 'usuarios' | 'descontos' | 'crm';
 
 const PERFIL_LABELS: Record<SessionUser['perfil'], string> = {
   admin: 'Admin',
@@ -25,6 +26,7 @@ interface Props {
 export default function Sidebar({ view, onChange, pendingCount, user, onLogout }: Props) {
   const isAdmin   = user.perfil === 'admin';
   const verDescontos = podeOperar(user.perfil);
+  const verCrm = podeVerCrm(user.perfil);
   const initials = user.nome
     .split(' ')
     .map(n => n[0])
@@ -60,6 +62,15 @@ export default function Sidebar({ view, onChange, pendingCount, user, onLogout }
           >
             <TicketPercent size={18} />
             <span>Pedidos c/ Desconto</span>
+          </button>
+        )}
+        {verCrm && (
+          <button
+            className={`lsw-sidebar__nav-item ${view === 'crm' ? 'lsw-sidebar__nav-item--active' : ''}`}
+            onClick={() => onChange('crm')}
+          >
+            <Target size={18} />
+            <span>CRM Comercial</span>
           </button>
         )}
         {isAdmin && (
