@@ -6,6 +6,7 @@ import {
   Clock,
   Crown,
   Inbox,
+  PenLine,
   RefreshCw,
   Undo2,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ import {
   type ClienteCrm,
 } from './crm';
 import { useMinhaAgenda } from './useMinhaAgenda';
+import { RegistrarAcaoModal } from './RegistrarAcaoModal';
 import type { SessionUser } from '../auth/auth';
 
 interface Props {
@@ -34,6 +36,7 @@ export function MinhaAgendaTab({ user }: Props) {
   const { data, loading, error, refresh } = useMinhaAgenda(user.email);
   const [toast, setToast] = React.useState<{ tone: 'ok' | 'erro'; texto: string } | null>(null);
   const [busy, setBusy] = React.useState<number | null>(null);
+  const [acaoCliente, setAcaoCliente] = React.useState<ClienteCrm | null>(null);
 
   const showToast = (tone: 'ok' | 'erro', texto: string) => {
     setToast({ tone, texto });
@@ -110,6 +113,7 @@ export function MinhaAgendaTab({ user }: Props) {
         clientes={data.vencidas}
         busy={busy}
         onDevolver={devolver}
+        onRegistrarAcao={setAcaoCliente}
       />
       <Section
         titulo="Para hoje"
@@ -119,6 +123,7 @@ export function MinhaAgendaTab({ user }: Props) {
         clientes={data.hoje}
         busy={busy}
         onDevolver={devolver}
+        onRegistrarAcao={setAcaoCliente}
       />
       <Section
         titulo="Esta semana"
@@ -128,6 +133,7 @@ export function MinhaAgendaTab({ user }: Props) {
         clientes={data.semana}
         busy={busy}
         onDevolver={devolver}
+        onRegistrarAcao={setAcaoCliente}
       />
       <Section
         titulo="Sem próxima ação definida"
@@ -137,9 +143,24 @@ export function MinhaAgendaTab({ user }: Props) {
         clientes={data.sem_proxima}
         busy={busy}
         onDevolver={devolver}
+        onRegistrarAcao={setAcaoCliente}
       />
 
       {toast && <div className={`crm-toast crm-toast--${toast.tone}`}>{toast.texto}</div>}
+
+      {acaoCliente && (
+        <RegistrarAcaoModal
+          cliente={acaoCliente}
+          usuario={user.email}
+          onClose={() => setAcaoCliente(null)}
+          onSuccess={async () => {
+            const nome = acaoCliente.razao_social;
+            setAcaoCliente(null);
+            showToast('ok', `Ação registrada em ${nome}.`);
+            await refresh();
+          }}
+        />
+      )}
     </>
   );
 }
@@ -152,6 +173,7 @@ function Section({
   clientes,
   busy,
   onDevolver,
+  onRegistrarAcao,
 }: {
   titulo: string;
   descricao: string;
@@ -160,6 +182,7 @@ function Section({
   clientes: ClienteCrm[];
   busy: number | null;
   onDevolver: (c: ClienteCrm) => void;
+  onRegistrarAcao: (c: ClienteCrm) => void;
 }) {
   return (
     <div className={`crm-agenda-section crm-agenda-section--${tone}`}>
@@ -177,7 +200,13 @@ function Section({
       ) : (
         <div className="crm-agenda-list">
           {clientes.map(c => (
-            <AgendaCard key={c.id} c={c} busy={busy === c.id} onDevolver={() => onDevolver(c)} />
+            <AgendaCard
+              key={c.id}
+              c={c}
+              busy={busy === c.id}
+              onDevolver={() => onDevolver(c)}
+              onRegistrarAcao={() => onRegistrarAcao(c)}
+            />
           ))}
         </div>
       )}
@@ -189,10 +218,12 @@ function AgendaCard({
   c,
   busy,
   onDevolver,
+  onRegistrarAcao,
 }: {
   c: ClienteCrm;
   busy: boolean;
   onDevolver: () => void;
+  onRegistrarAcao: () => void;
 }) {
   return (
     <div className="crm-agenda-card">
@@ -243,9 +274,12 @@ function AgendaCard({
       </div>
 
       <div className="crm-agenda-card__foot">
-        <button className="crm-rowbtn crm-rowbtn--primary" disabled>
-          Registrar ação
-          <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 6 }}>(em breve)</span>
+        <button
+          className="crm-rowbtn crm-rowbtn--primary"
+          onClick={onRegistrarAcao}
+          disabled={busy}
+        >
+          <PenLine size={12} /> Registrar ação
         </button>
         <button
           className="crm-rowbtn crm-rowbtn--ghost"
