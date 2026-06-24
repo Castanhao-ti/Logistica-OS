@@ -14,6 +14,7 @@ import type { SessionUser } from '../auth/auth';
 import { VisaoGeralTab } from './VisaoGeralTab';
 import { CarteiraTab } from './CarteiraTab';
 import { MinhaAgendaTab } from './MinhaAgendaTab';
+import { OportunidadesTab } from './OportunidadesTab';
 import './crm.css';
 
 type AbaCrm =
@@ -138,17 +139,7 @@ const STUBS: Record<AbaCrm, { titulo: string; descricao: string; itens: string[]
       'Ações registradas no período',
     ],
   },
-  oportunidades: {
-    titulo: 'Pipeline em construção',
-    descricao:
-      'Kanban por etapa (Novo → Contatado → Qualificado → Proposta → Negociação → Ganho/Perdido). Persiste em crm_oportunidades.',
-    itens: [
-      'Kanban arrastável por etapa',
-      'Valor estimado e ponderado',
-      'Origem da oportunidade',
-      'Motivos de perda',
-    ],
-  },
+  oportunidades: null,
   relatorios: {
     titulo: 'Relatórios em construção',
     descricao:
@@ -202,6 +193,7 @@ export function CrmPage({ user }: Props) {
           onClienteAtribuido={() => setAgendaKey(k => k + 1)}
         />
       )}
+      {aba === 'oportunidades' && <OportunidadesTab user={user} />}
 
       {stub && (
         <>

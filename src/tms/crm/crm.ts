@@ -252,7 +252,59 @@ export const crmApi = {
     call<MinhaAgendaResponse>(
       `lsw-crm-minha-agenda?email=${encodeURIComponent(email)}`
     ),
+  listarOportunidades: () =>
+    call<{ resposta: OportunidadesResponse }>('lsw-crm-oportunidades').then(
+      r => r.resposta
+    ),
+  criarOportunidade: (payload: {
+    cliente_id: number;
+    usuario_email: string;
+    usuario_nome: string;
+    etapa?: EtapaOportunidade;
+    valor_estimado?: number;
+    origem?: OrigemOportunidade;
+    observacao?: string;
+    data_previsao_fechamento?: string;
+    probabilidade?: number;
+  }) =>
+    call<OportunidadeListagem>('lsw-crm-oportunidade-criar', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  moverEtapaOportunidade: (payload: {
+    id: number;
+    etapa: EtapaOportunidade;
+    motivo_perda?: string;
+    valor_estimado?: number;
+  }) =>
+    call<OportunidadeListagem>('lsw-crm-oportunidade-etapa', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
+
+/* ───────────────────── Oportunidades (response shape) ───────────────────── */
+
+/** Oportunidade enriquecida que vem do BFF lsw-crm-oportunidades (com JOIN
+ *  em crm_clientes e crm_indicadores_cliente + agregado dias_aberta). */
+export interface OportunidadeListagem extends Oportunidade {
+  razao_social: string;
+  cnpj: string;
+  cidade: string | null;
+  uf: string | null;
+  eh_carteira_luiz: boolean;
+  prioridade_crm: PrioridadeCrm | null;
+  status_cliente: StatusCliente | null;
+  owner_nome: string | null;
+  owner_email: string | null;
+  dias_aberta: number;
+}
+
+export interface OportunidadesResponse {
+  total: number;
+  valor_total: number;
+  oportunidades: OportunidadeListagem[];
+}
 
 /* ───────────────────── Permissões ───────────────────── */
 
@@ -356,6 +408,39 @@ export const ETAPA_LABELS: Record<EtapaOportunidade, string> = {
   NEGOCIACAO: 'Negociação',
   GANHO: 'Ganho',
   PERDIDO: 'Perdido',
+};
+
+/** Ordem oficial das colunas do kanban */
+export const ETAPAS_KANBAN: EtapaOportunidade[] = [
+  'NOVO',
+  'CONTATADO',
+  'QUALIFICADO',
+  'PROPOSTA',
+  'NEGOCIACAO',
+  'GANHO',
+  'PERDIDO',
+];
+
+/** Tom semântico de cada etapa para colorir a coluna do kanban */
+export const ETAPA_TONE: Record<EtapaOportunidade, 'frio' | 'info' | 'ok' | 'alerta' | 'urgente' | 'sucesso' | 'perdido'> = {
+  NOVO:         'frio',
+  CONTATADO:    'info',
+  QUALIFICADO:  'info',
+  PROPOSTA:     'alerta',
+  NEGOCIACAO:   'urgente',
+  GANHO:        'sucesso',
+  PERDIDO:      'perdido',
+};
+
+export const ORIGEM_LABELS: Record<OrigemOportunidade, string> = {
+  REATIVACAO:        'Reativação',
+  RECOMPRA:          'Recompra',
+  SEM_PEDIDO:        'Sem pedido',
+  INDICACAO:         'Indicação',
+  CAMPANHA:          'Campanha',
+  VENDEDOR_EXTERNO:  'Vendedor externo',
+  PLATAFORMA:        'Plataforma',
+  OUTRO:             'Outro',
 };
 
 /* ───────────────────── Formatadores ───────────────────── */
