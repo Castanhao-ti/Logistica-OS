@@ -114,6 +114,14 @@ export interface ClienteCrm {
   proxima_acao: string | null;
   data_proxima_acao: string | null;
   status_proxima_acao: StatusProximaAcao | null;
+  /* Crédito (sincronizado do Bluesoft cliente.credito_obs) */
+  credito_obs: string | null;
+  credito_grade: number | null;
+  credito_bloqueado: boolean;
+  /* Inadimplência (JOIN com crm_inadimplentes via CNPJ) */
+  valor_atrasado: number;
+  qtd_boletos_atrasados: number | null;
+  vencimento_mais_antigo: string | null;
 }
 
 export interface AcaoComercial {

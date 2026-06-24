@@ -31,6 +31,14 @@ function normaliza(raw: any): ClienteCrm {
     proxima_acao: raw.proxima_acao ?? null,
     data_proxima_acao: raw.data_proxima_acao ?? null,
     status_proxima_acao: raw.status_proxima_acao ?? null,
+    credito_obs: raw.credito_obs ?? null,
+    credito_grade: raw.credito_grade == null ? null : parseInt(String(raw.credito_grade), 10),
+    credito_bloqueado: !!raw.credito_bloqueado,
+    valor_atrasado: num(raw.valor_atrasado),
+    qtd_boletos_atrasados: intOrNull(raw.qtd_boletos_atrasados),
+    vencimento_mais_antigo: raw.vencimento_mais_antigo
+      ? String(raw.vencimento_mais_antigo).slice(0, 10)
+      : null,
   };
 }
 

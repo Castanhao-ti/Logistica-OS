@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  AlertOctagon,
   AlertTriangle,
   CalendarClock,
   CalendarDays,
@@ -8,6 +9,8 @@ import {
   Inbox,
   PenLine,
   RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
   Undo2,
 } from 'lucide-react';
 import { StatusChip } from '../components/StatusChip';
@@ -239,6 +242,14 @@ function AgendaCard({
                   <Crown size={10} /> Luiz
                 </span>
               )}
+              {c.valor_atrasado > 0 && (
+                <span
+                  className="crm-atrasado-badge"
+                  title={`${c.qtd_boletos_atrasados ?? 0} boleto(s) atrasado(s)`}
+                >
+                  <AlertOctagon size={10} /> Atrasado {fmtBRL(c.valor_atrasado)}
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -249,6 +260,22 @@ function AgendaCard({
           <StatusChip tone={PRIORIDADE_TONE[c.prioridade_crm]}>
             {PRIORIDADE_LABELS_CURTO[c.prioridade_crm]}
           </StatusChip>
+          {c.credito_bloqueado && (
+            <span
+              className="crm-credito-badge crm-credito-badge--bloqueado"
+              title={c.credito_obs ?? undefined}
+            >
+              <ShieldAlert size={11} /> Bloqueado
+            </span>
+          )}
+          {!c.credito_bloqueado && c.credito_grade != null && (
+            <span
+              className={`crm-credito-badge crm-credito-badge--${c.credito_grade >= 7 ? 'alto' : c.credito_grade >= 6 ? 'medio' : 'baixo'}`}
+              title={c.credito_obs ?? undefined}
+            >
+              <ShieldCheck size={11} /> Grade {c.credito_grade}
+            </span>
+          )}
         </div>
       </div>
 

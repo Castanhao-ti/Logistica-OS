@@ -1,5 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshCw, Search, Crown, Hand, Zap, Undo2 } from 'lucide-react';
+import {
+  AlertOctagon,
+  Crown,
+  Hand,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  Undo2,
+  Zap,
+} from 'lucide-react';
 import { StatusChip } from '../components/StatusChip';
 import {
   crmApi,
@@ -24,6 +34,13 @@ type FiltroPrioridade = 'todas' | PrioridadeCrm;
 type FiltroStatus = 'todos' | StatusCliente;
 type FiltroLuiz = 'todos' | 'sim' | 'nao';
 type FiltroDisp = 'disponiveis' | 'meus' | 'todos';
+/* Filtro de crédito:
+ *   todas     — sem filtro
+ *   5+/6+/7+/8 — grade mínima (inclui maiores)
+ *   sem_grade — apenas quem não tem credito_obs/grade preenchida
+ *   bloqueados — apenas quem tem CAD EFET P/ CH DEV ou similar
+ *   atrasados  — apenas quem tem boleto na planilha de inadimplência */
+type FiltroCredito = 'todas' | '5' | '6' | '7' | '8' | 'sem_grade' | 'bloqueados' | 'atrasados';
 
 interface Props {
   user: SessionUser;
@@ -37,6 +54,7 @@ export function CarteiraTab({ user, onClienteAtribuido }: Props) {
   const [filtroStatus, setFiltroStatus] = useState<FiltroStatus>('todos');
   const [filtroLuiz, setFiltroLuiz] = useState<FiltroLuiz>('nao');
   const [filtroDisp, setFiltroDisp] = useState<FiltroDisp>('disponiveis');
+  const [filtroCredito, setFiltroCredito] = useState<FiltroCredito>('todas');
   const [busy, setBusy] = useState<number | string | null>(null);
   const [toast, setToast] = useState<{ tone: 'ok' | 'erro'; texto: string } | null>(null);
 
@@ -54,13 +72,22 @@ export function CarteiraTab({ user, onClienteAtribuido }: Props) {
       if (filtroLuiz === 'nao' && c.eh_carteira_luiz) return false;
       if (filtroPri !== 'todas' && c.prioridade_crm !== filtroPri) return false;
       if (filtroStatus !== 'todos' && c.status_cliente !== filtroStatus) return false;
+      if (filtroCredito !== 'todas') {
+        if (filtroCredito === 'sem_grade' && c.credito_grade != null) return false;
+        else if (filtroCredito === 'bloqueados' && !c.credito_bloqueado) return false;
+        else if (filtroCredito === 'atrasados' && c.valor_atrasado <= 0) return false;
+        else if (['5', '6', '7', '8'].includes(filtroCredito)) {
+          const min = parseInt(filtroCredito, 10);
+          if (c.credito_grade == null || c.credito_grade < min) return false;
+        }
+      }
       if (q) {
         const blob = `${c.razao_social} ${c.cnpj} ${c.cidade || ''} ${c.vendedor_original || ''}`.toLowerCase();
         if (!blob.includes(q)) return false;
       }
       return true;
     });
-  }, [clientes, busca, filtroPri, filtroStatus, filtroLuiz, filtroDisp, user.nome]);
+  }, [clientes, busca, filtroPri, filtroStatus, filtroLuiz, filtroDisp, filtroCredito, user.nome]);
 
   async function assumir(c: ClienteCrm) {
     setBusy(c.id);
@@ -237,6 +264,21 @@ export function CarteiraTab({ user, onClienteAtribuido }: Props) {
           <option value="sim">Apenas Luiz</option>
           <option value="todos">Todos (Luiz + outros)</option>
         </select>
+        <select
+          className="crm-select"
+          value={filtroCredito}
+          onChange={e => setFiltroCredito(e.target.value as FiltroCredito)}
+          title="Filtrar por classificação de crédito (Bluesoft) ou inadimplência"
+        >
+          <option value="todas">Todo crédito</option>
+          <option value="5">Grade 5+</option>
+          <option value="6">Grade 6+ (foco vendas)</option>
+          <option value="7">Grade 7+</option>
+          <option value="8">Grade 8 (top)</option>
+          <option value="sem_grade">Sem grade</option>
+          <option value="bloqueados">Bloqueados (CH dev.)</option>
+          <option value="atrasados">Com boleto atrasado</option>
+        </select>
         <button className="crm-btn crm-btn--ghost" onClick={refresh} title="Atualizar">
           <RefreshCw size={14} />
         </button>
@@ -255,6 +297,7 @@ export function CarteiraTab({ user, onClienteAtribuido }: Props) {
               <th>Owner</th>
               <th>Status</th>
               <th>Prioridade</th>
+              <th>Crédito</th>
               <th className="crm-table__num">Venda histórica</th>
               <th className="crm-table__num">Dias s/ compra</th>
               <th>Último pedido</th>
@@ -274,7 +317,7 @@ export function CarteiraTab({ user, onClienteAtribuido }: Props) {
             ))}
             {!filtrados.length && (
               <tr>
-                <td colSpan={9} className="crm-table__empty">
+                <td colSpan={10} className="crm-table__empty">
                   Nenhum cliente atende aos filtros.
                 </td>
               </tr>
@@ -335,6 +378,14 @@ function ClienteRow({
                   <Crown size={10} /> Luiz
                 </span>
               )}
+              {c.valor_atrasado > 0 && (
+                <span
+                  className="crm-atrasado-badge"
+                  title={`${c.qtd_boletos_atrasados ?? 0} boleto(s) atrasado(s) · vencimento mais antigo: ${fmtData(c.vencimento_mais_antigo)}`}
+                >
+                  <AlertOctagon size={10} /> Atrasado {fmtBRL(c.valor_atrasado)}
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -359,6 +410,9 @@ function ClienteRow({
         <StatusChip tone={PRIORIDADE_TONE[c.prioridade_crm]}>
           {PRIORIDADE_LABELS_CURTO[c.prioridade_crm]}
         </StatusChip>
+      </td>
+      <td>
+        <CreditoCell cliente={c} />
       </td>
       <td className="crm-table__num crm-mono">{fmtBRL(c.venda_historica)}</td>
       <td className={`crm-table__num crm-mono ${diasTone}`}>
@@ -390,4 +444,38 @@ function ClienteRow({
       </td>
     </tr>
   );
+}
+
+/**
+ * Mostra a classificação de crédito do Bluesoft.
+ * - Bloqueado (CAD EFET P/ LANC CH DEV) → badge vermelho com escudo
+ * - Grade extraída (5-8) → badge tonal (alto=verde, baixo=âmbar)
+ * - Sem grade mas tem obs → mostra "obs" tooltipado
+ * - Sem nada → "—"
+ */
+function CreditoCell({ cliente }: { cliente: ClienteCrm }) {
+  if (cliente.credito_bloqueado) {
+    return (
+      <span className="crm-credito-badge crm-credito-badge--bloqueado" title={cliente.credito_obs ?? undefined}>
+        <ShieldAlert size={11} /> Bloqueado
+      </span>
+    );
+  }
+  if (cliente.credito_grade != null) {
+    const g = cliente.credito_grade;
+    const tone = g >= 7 ? 'alto' : g >= 6 ? 'medio' : 'baixo';
+    return (
+      <span className={`crm-credito-badge crm-credito-badge--${tone}`} title={cliente.credito_obs ?? undefined}>
+        <ShieldCheck size={11} /> Grade {g}
+      </span>
+    );
+  }
+  if (cliente.credito_obs) {
+    return (
+      <span className="crm-credito-badge crm-credito-badge--obs" title={cliente.credito_obs}>
+        Sem grade
+      </span>
+    );
+  }
+  return <span className="crm-cell-muted" style={{ fontSize: 11 }}>—</span>;
 }
