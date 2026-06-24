@@ -1,18 +1,50 @@
 /* ════════════════════════════════════════════════════════════════
    LSW — CRM Comercial B2B
-   Direção: painel operacional para vendas internas / SDR / Farmer
-   Paleta institucional LSW (#2C503E verde, #D05F02 laranja, #F6F4EE bg)
-   Tipografia: Bricolage Grotesque (display) + Poppins (corpo)
+   Paleta institucional via Manual de Marca:
+     #2C503E verde primário · #D05F02 laranja acento · #F6F4EE bg
+   Tipografia: Now (display, fallback Bricolage Grotesque) + Poppins (UI)
+   Tokens globais vêm de src/tms/tms.css — aqui só estendemos com
+   semânticas específicas do CRM (urgente/alerta/ok/info/key).
    ════════════════════════════════════════════════════════════════ */
 
 
-/* ────────── Shell + Tabs internas ────────── */
+/* ────────── Tokens semânticos do CRM (derivados da marca) ────────── */
 .crm-shell {
+  /* Urgência (P0, vencidas, ≥180 dias) — usa laranja LSW, acento oficial */
+  --crm-urgente:       var(--lsw-orange);
+  --crm-urgente-strong: var(--lsw-orange-dark);
+  --crm-urgente-soft:  #FBE9D8;
+
+  /* Alerta (P1, hoje, em risco) — âmbar derivado, complementa o laranja */
+  --crm-alerta:        #C2890C;
+  --crm-alerta-soft:   #FCF1D9;
+
+  /* OK (saudável, semana, ativo) — verde LSW primário */
+  --crm-ok:            var(--lsw-green);
+  --crm-ok-soft:       #E8EFEC;
+
+  /* Informacional (SDR, prospect, neutro) — azul-aço derivado, sóbrio */
+  --crm-info:          #2E5A8C;
+  --crm-info-soft:     #E1ECF8;
+
+  /* Key Account (Luiz) — verde profundo da marca */
+  --crm-key:           var(--lsw-green-deep);
+  --crm-key-soft:      #E2EAE6;
+
+  /* Frio (sem retorno, neutro muted) */
+  --crm-frio:          var(--lsw-text-muted);
+  --crm-frio-soft:     #ECE7DA;
+
+  /* Erro (toast de falha) */
+  --crm-danger:        #B23A2A;
+
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
+
+/* ────────── Tabs internas ────────── */
 .crm-tabs-bar {
   display: flex;
   align-items: center;
@@ -54,7 +86,7 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--lsw-bg-alt, #ECE7DA);
+  background: var(--crm-frio-soft);
   color: var(--lsw-text-muted);
   font-size: 11px;
   font-weight: 600;
@@ -94,9 +126,9 @@
 
 /* ────────── Cards de placeholder por aba ────────── */
 .crm-stub-card {
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 28px;
   margin-top: 12px;
 }
@@ -128,7 +160,7 @@
   font-size: 13px;
   color: var(--lsw-text);
   padding: 8px 10px;
-  background: var(--lsw-bg, #F6F4EE);
+  background: var(--lsw-bg);
   border-radius: 8px;
 }
 .crm-stub-card__dot {
@@ -160,9 +192,9 @@
   .crm-distrib-grid { grid-template-columns: 1fr; }
 }
 .crm-distrib-card {
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 18px 20px;
 }
 .crm-distrib-card__title {
@@ -193,7 +225,7 @@
 .crm-distrib-row__value { font-family: var(--font-mono); font-weight: 600; }
 .crm-distrib-row__bar {
   height: 6px;
-  background: var(--lsw-bg-alt, #ECE7DA);
+  background: var(--crm-frio-soft);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -216,7 +248,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
   border-radius: 999px;
   padding: 6px 14px;
@@ -235,7 +267,7 @@
 }
 .crm-select {
   border: 1px solid var(--lsw-border);
-  background: #fff;
+  background: var(--lsw-surface);
   border-radius: 999px;
   padding: 7px 14px;
   font-family: var(--font-ui);
@@ -249,19 +281,21 @@
   gap: 6px;
   padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid var(--lsw-border);
+  border: 1px solid var(--lsw-green);
   background: var(--lsw-green);
   color: #fff;
   font-family: var(--font-ui);
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
+  transition: filter 0.15s, background-color 0.15s;
 }
+.crm-btn:hover:not(:disabled) { filter: brightness(1.08); }
 .crm-btn--ghost {
-  background: #fff;
+  background: var(--lsw-surface);
   color: var(--lsw-text);
+  border-color: var(--lsw-border);
 }
-.crm-btn:hover { opacity: 0.92; }
 
 
 /* ────────── Tabela de carteira ────────── */
@@ -273,9 +307,9 @@
 .crm-list-meta--soft { opacity: 0.7; margin-top: 8px; }
 
 .crm-table-wrap {
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -296,7 +330,7 @@
   padding: 14px 14px;
   border-bottom: 1px solid var(--lsw-border);
   white-space: nowrap;
-  background: var(--lsw-bg, #F6F4EE);
+  background: var(--lsw-bg);
 }
 .crm-table tbody td {
   padding: 12px 14px;
@@ -304,7 +338,7 @@
   vertical-align: middle;
 }
 .crm-table tbody tr:last-child td { border-bottom: none; }
-.crm-table tbody tr:hover td { background: var(--lsw-bg, #F6F4EE); }
+.crm-table tbody tr:hover td { background: var(--lsw-bg); }
 .crm-table__num { text-align: right; white-space: nowrap; }
 .crm-table__empty {
   text-align: center;
@@ -357,24 +391,25 @@
   gap: 6px;
 }
 
+/* Carteira Luiz = Key Account → verde profundo da marca */
 .crm-luiz-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   padding: 1px 6px;
-  background: rgba(139, 92, 246, 0.12);
-  color: #8b5cf6;
+  background: var(--crm-key-soft);
+  color: var(--crm-key);
   border-radius: 999px;
   font-size: 10px;
   font-weight: 600;
   font-family: var(--font-ui);
 }
 
-/* Dias sem compra com tom condicional */
-.crm-dias--ok      { color: #22c55e; font-weight: 600; }
-.crm-dias--alerta  { color: #eab308; font-weight: 600; }
-.crm-dias--quente  { color: #f97316; font-weight: 600; }
-.crm-dias--frio    { color: #ef4444; font-weight: 600; }
+/* Dias sem compra — escala de calor LSW (verde → âmbar → laranja) */
+.crm-dias--ok      { color: var(--crm-ok);      font-weight: 600; }
+.crm-dias--alerta  { color: var(--crm-alerta);  font-weight: 600; }
+.crm-dias--quente  { color: var(--crm-urgente); font-weight: 600; }
+.crm-dias--frio    { color: var(--crm-urgente-strong); font-weight: 600; }
 .crm-dias--na      { color: var(--lsw-text-muted); }
 
 
@@ -384,9 +419,9 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   margin-bottom: 14px;
 }
@@ -399,9 +434,24 @@
   color: var(--lsw-text-muted);
   margin-right: 4px;
 }
-.crm-btn--p0  { background: #ef4444; color: #fff; border-color: #ef4444; }
-.crm-btn--p1  { background: #f97316; color: #fff; border-color: #f97316; }
-.crm-btn--sdr { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+/* P0 = urgência máxima → laranja LSW (acento oficial) */
+.crm-btn--p0  {
+  background: var(--crm-urgente);
+  color: #fff;
+  border-color: var(--crm-urgente);
+}
+/* P1 = alerta → âmbar derivado, sem competir com P0 */
+.crm-btn--p1  {
+  background: var(--crm-alerta);
+  color: #fff;
+  border-color: var(--crm-alerta);
+}
+/* SDR = informacional → azul-aço sóbrio */
+.crm-btn--sdr {
+  background: var(--crm-info);
+  color: #fff;
+  border-color: var(--crm-info);
+}
 .crm-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 
@@ -411,7 +461,7 @@
   align-items: center;
   padding: 2px 9px;
   border-radius: 999px;
-  background: var(--lsw-bg-alt, #ECE7DA);
+  background: var(--crm-frio-soft);
   color: var(--lsw-text);
   font-size: 11.5px;
   font-weight: 500;
@@ -424,12 +474,12 @@
   font-style: italic;
 }
 .crm-owner--meu {
-  background: rgba(44, 80, 62, 0.12);
+  background: var(--crm-ok-soft);
   color: var(--lsw-green);
   font-weight: 600;
 }
 .crm-row--meu td {
-  background: rgba(44, 80, 62, 0.04);
+  background: color-mix(in srgb, var(--lsw-green) 4%, transparent);
 }
 
 
@@ -441,7 +491,7 @@
   padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--lsw-border);
-  background: #fff;
+  background: var(--lsw-surface);
   color: var(--lsw-text);
   font-family: var(--font-ui);
   font-size: 11.5px;
@@ -455,7 +505,7 @@
   border-color: var(--lsw-orange);
 }
 .crm-rowbtn--ghost {
-  background: #fff;
+  background: var(--lsw-surface);
   color: var(--lsw-text-muted);
 }
 .crm-rowbtn:hover:not(:disabled) { filter: brightness(0.94); }
@@ -468,18 +518,18 @@
   bottom: 24px;
   right: 24px;
   padding: 12px 18px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--lsw-text);
   color: #fff;
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-pop);
   z-index: 1000;
   animation: crm-toast-in 0.2s ease;
   max-width: 420px;
 }
-.crm-toast--ok   { background: #22c55e; }
-.crm-toast--erro { background: #ef4444; }
+.crm-toast--ok   { background: var(--crm-ok); }
+.crm-toast--erro { background: var(--crm-danger); }
 @keyframes crm-toast-in {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -497,17 +547,18 @@
 }
 
 .crm-agenda-section {
-  background: #fff;
+  background: var(--lsw-surface);
   border: 1px solid var(--lsw-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 18px 20px;
   margin-bottom: 14px;
   border-left-width: 4px;
 }
-.crm-agenda-section--alerta { border-left-color: #ef4444; }
-.crm-agenda-section--hoje   { border-left-color: #f59e0b; }
-.crm-agenda-section--semana { border-left-color: var(--lsw-green); }
-.crm-agenda-section--frio   { border-left-color: var(--lsw-text-muted); }
+/* Vencidas = urgência → laranja LSW (não vermelho ANSI) */
+.crm-agenda-section--alerta { border-left-color: var(--crm-urgente); }
+.crm-agenda-section--hoje   { border-left-color: var(--crm-alerta); }
+.crm-agenda-section--semana { border-left-color: var(--crm-ok); }
+.crm-agenda-section--frio   { border-left-color: var(--crm-frio); }
 
 .crm-agenda-section__head {
   margin-bottom: 14px;
@@ -532,13 +583,24 @@
   min-width: 22px;
   height: 22px;
   padding: 0 7px;
-  background: var(--lsw-bg-alt, #ECE7DA);
+  background: var(--crm-frio-soft);
   color: var(--lsw-text);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
 }
-.crm-agenda-section--alerta .crm-agenda-section__count { background: #ef4444; color: #fff; }
+.crm-agenda-section--alerta .crm-agenda-section__count {
+  background: var(--crm-urgente);
+  color: #fff;
+}
+.crm-agenda-section--hoje .crm-agenda-section__count {
+  background: var(--crm-alerta);
+  color: #fff;
+}
+.crm-agenda-section--semana .crm-agenda-section__count {
+  background: var(--crm-ok);
+  color: #fff;
+}
 
 .crm-agenda-section__desc {
   font-size: 12.5px;
@@ -551,7 +613,7 @@
   color: var(--lsw-text-muted);
   font-style: italic;
   font-size: 12.5px;
-  background: var(--lsw-bg, #F6F4EE);
+  background: var(--lsw-bg);
   border-radius: 8px;
 }
 
@@ -562,9 +624,9 @@
 }
 
 .crm-agenda-card {
-  background: var(--lsw-bg, #F6F4EE);
+  background: var(--lsw-bg);
   border: 1px solid var(--lsw-border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -610,3 +672,21 @@
   border-top: 1px solid var(--lsw-border);
   padding-top: 10px;
 }
+
+
+/* ────────── Override do StatusChip global dentro do CRM ──────────
+   StatusChip é compartilhado entre módulos com paleta legada (vermelho/
+   amarelo/azul Tailwind). No escopo do CRM, repaginar para a paleta LSW
+   sem afetar TMS / Descontos. */
+.crm-shell .status-chip--entregue    { background: var(--crm-ok-soft);      color: var(--crm-ok); }
+.crm-shell .status-chip--entregue    .status-chip__dot { background: var(--crm-ok); }
+.crm-shell .status-chip--transito    { background: var(--crm-ok-soft);      color: var(--crm-ok); }
+.crm-shell .status-chip--transito    .status-chip__dot { background: var(--crm-ok); }
+.crm-shell .status-chip--pendente    { background: var(--crm-alerta-soft);  color: var(--crm-alerta); }
+.crm-shell .status-chip--pendente    .status-chip__dot { background: var(--crm-alerta); }
+.crm-shell .status-chip--atrasado    { background: var(--crm-urgente-soft); color: var(--crm-urgente-strong); }
+.crm-shell .status-chip--atrasado    .status-chip__dot { background: var(--crm-urgente); }
+.crm-shell .status-chip--prioritario { background: var(--crm-info-soft);    color: var(--crm-info); }
+.crm-shell .status-chip--prioritario .status-chip__dot { background: var(--crm-info); }
+.crm-shell .status-chip--rascunho    { background: var(--crm-frio-soft);    color: var(--lsw-text-muted); }
+.crm-shell .status-chip--rascunho    .status-chip__dot { background: var(--crm-frio); }
