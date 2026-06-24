@@ -14,17 +14,28 @@ import { KpiCard } from '../components/KpiCard';
 import { fmtBRL, fmtNum } from './crm';
 import { useCrmResumo } from './useCrmResumo';
 
-const TOKEN = {
-  verde: 'var(--lsw-green)',
-  laranja: 'var(--lsw-orange)',
-  laranjaEscuro: 'var(--lsw-orange-dark)',
-  urgente: 'var(--crm-urgente)',
-  alerta: 'var(--crm-alerta)',
-  ok: 'var(--crm-ok)',
-  info: 'var(--crm-info)',
-  key: 'var(--crm-key)',
-  frio: 'var(--crm-frio)',
-};
+const fmtBRLCompacto = (v: number) =>
+  new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(v);
+
+/*
+ * iconColor exige hex literal (KpiCard usa hexToRgba para gerar o tint).
+ * Mantemos aqui os hex sincronizados com os tokens --crm-* em crm.css.
+ */
+const COLOR = {
+  verde: '#2C503E',
+  laranja: '#D05F02',
+  urgente: '#D05F02',
+  alerta: '#C2890C',
+  ok: '#2C503E',
+  info: '#2E5A8C',
+  key: '#1C3528',
+  frio: '#7E8C82',
+} as const;
 
 export function VisaoGeralTab() {
   const { data, loading, error, refresh } = useCrmResumo();
@@ -58,75 +69,75 @@ export function VisaoGeralTab() {
           value={fmtNum(data.total_clientes)}
           reference={`${fmtNum(data.fora_luiz)} fora da carteira Luiz`}
           icon={<Users size={16} />}
-          iconColor={TOKEN.verde}
+          iconColor={COLOR.verde}
         />
         <KpiCard
           label="Ativos (≤60d)"
           value={fmtNum(data.ativos)}
           reference={`${((data.ativos / Math.max(data.total_clientes, 1)) * 100).toFixed(1)}% da base`}
           icon={<Sparkles size={16} />}
-          iconColor={TOKEN.ok}
+          iconColor={COLOR.ok}
         />
         <KpiCard
           label="Inativos (>60d)"
           value={fmtNum(data.inativos)}
           reference={`${fmtNum(data.acima_60_dias)} para reativação`}
           icon={<TrendingDown size={16} />}
-          iconColor={TOKEN.laranja}
+          iconColor={COLOR.laranja}
         />
         <KpiCard
           label="Sem pedido"
           value={fmtNum(data.sem_pedido)}
           reference="Foco do SDR"
           icon={<PhoneCall size={16} />}
-          iconColor={TOKEN.info}
+          iconColor={COLOR.info}
         />
         <KpiCard
           label="P0 — Ataque imediato"
           value={fmtNum(data.p0)}
           reference={`+ ${fmtNum(data.p1)} P1 (reativação alta)`}
           icon={<Target size={16} />}
-          iconColor={TOKEN.urgente}
+          iconColor={COLOR.urgente}
         />
         <KpiCard
           label="Em risco (>30d)"
           value={fmtNum(data.acima_30_dias)}
           reference="Janela 31–60d entra em P0"
           icon={<AlertTriangle size={16} />}
-          iconColor={TOKEN.alerta}
+          iconColor={COLOR.alerta}
         />
         <KpiCard
           label="Carteira Luiz Bobko"
           value={fmtNum(data.carteira_luiz)}
           reference="Key Account separada"
           icon={<Crown size={16} />}
-          iconColor={TOKEN.key}
+          iconColor={COLOR.key}
         />
         <KpiCard
           label="Venda histórica total"
-          value={fmtBRL(data.venda_historica_total)}
-          reference={`Ticket médio ${fmtBRL(data.ticket_medio_geral)}`}
+          value={fmtBRLCompacto(data.venda_historica_total)}
+          reference={`${fmtBRL(data.venda_historica_total)} · ticket ${fmtBRL(data.ticket_medio_geral)}`}
           icon={<DollarSign size={16} />}
-          iconColor={TOKEN.verde}
+          iconColor={COLOR.verde}
         />
       </div>
 
       <div className="crm-distrib-grid">
         <div className="crm-distrib-card">
           <h4 className="crm-distrib-card__title">Distribuição por prioridade</h4>
-          <DistribRow label="P0 — Ataque imediato" value={data.p0} total={data.total_clientes} color={TOKEN.urgente} />
-          <DistribRow label="P1 — Reativação alta" value={data.p1} total={data.total_clientes} color={TOKEN.alerta} />
-          <DistribRow label="P2 — Cadência normal" value={data.p2 ?? 0} total={data.total_clientes} color={TOKEN.verde} />
-          <DistribRow label="P3 — Ativação SDR" value={data.p3 ?? 0} total={data.total_clientes} color={TOKEN.info} />
-          <DistribRow label="P4 — Nutrição" value={data.p4 ?? 0} total={data.total_clientes} color={TOKEN.frio} />
-          <DistribRow label="Key Account Luiz" value={data.carteira_luiz} total={data.total_clientes} color={TOKEN.key} />
+          <DistribRow label="P0 — Ataque imediato" value={data.p0} total={data.total_clientes} color="var(--crm-urgente)" />
+          <DistribRow label="P1 — Reativação alta" value={data.p1} total={data.total_clientes} color="var(--crm-alerta)" />
+          <DistribRow label="P2 — Cadência normal" value={data.p2 ?? 0} total={data.total_clientes} color="var(--lsw-green)" />
+          <DistribRow label="P3 — Ativação SDR" value={data.p3 ?? 0} total={data.total_clientes} color="var(--crm-info)" />
+          <DistribRow label="P4 — Nutrição" value={data.p4 ?? 0} total={data.total_clientes} color="var(--crm-frio)" />
+          <DistribRow label="Key Account Luiz" value={data.carteira_luiz} total={data.total_clientes} color="var(--crm-key)" />
         </div>
 
         <div className="crm-distrib-card">
           <h4 className="crm-distrib-card__title">Distribuição por status</h4>
-          <DistribRow label="Ativos (≤60 dias)" value={data.ativos} total={data.total_clientes} color={TOKEN.ok} />
-          <DistribRow label="Inativos (>60 dias)" value={data.inativos} total={data.total_clientes} color={TOKEN.laranja} />
-          <DistribRow label="Sem pedido" value={data.sem_pedido} total={data.total_clientes} color={TOKEN.frio} />
+          <DistribRow label="Ativos (≤60 dias)" value={data.ativos} total={data.total_clientes} color="var(--crm-ok)" />
+          <DistribRow label="Inativos (>60 dias)" value={data.inativos} total={data.total_clientes} color="var(--lsw-orange)" />
+          <DistribRow label="Sem pedido" value={data.sem_pedido} total={data.total_clientes} color="var(--crm-frio)" />
         </div>
       </div>
     </>
@@ -147,15 +158,13 @@ function DistribRow({
   const pct = total > 0 ? (value / total) * 100 : 0;
   return (
     <div className="crm-distrib-row">
-      <div className="crm-distrib-row__head">
-        <span className="crm-distrib-row__label">{label}</span>
-        <span className="crm-distrib-row__value">
-          {fmtNum(value)} <span className="crm-distrib-row__pct">{pct.toFixed(1)}%</span>
-        </span>
-      </div>
+      <span className="crm-distrib-row__label">{label}</span>
       <div className="crm-distrib-row__bar">
         <div className="crm-distrib-row__fill" style={{ width: `${pct}%`, background: color }} />
       </div>
+      <span className="crm-distrib-row__value">
+        {fmtNum(value)} <span className="crm-distrib-row__pct">{pct.toFixed(1)}%</span>
+      </span>
     </div>
   );
 }
