@@ -450,6 +450,7 @@ function ItensGroup({
                     <th className="num">Praticado</th>
                     <th className="num">Variação un.</th>
                     <th className="num">Variação tot.</th>
+                    <th className="num">Margem</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -469,6 +470,7 @@ function ItensGroup({
 function LinhaItem({ item }: { item: ItemPedido }) {
   const variacaoNegativa = item.preco_variacao < 0;
   const variacaoPositiva = item.preco_variacao > 0;
+  const margemNegativa = item.perc_margem_item != null && item.perc_margem_item < 0;
   const variacaoTotal = item.quantidade * item.preco_variacao;
   const desc = item.descricao_produto ?? `Produto ${item.produto_key}`;
   const [head, ...rest] = desc.split(/(?:\s+)(?=\d|[A-Z]{3,}|CX\b|UN\b|G\s+|ML\s+)/i);
@@ -492,6 +494,11 @@ function LinhaItem({ item }: { item: ItemPedido }) {
       </td>
       <td className={`num ${variacaoNegativa ? 'neg' : variacaoPositiva ? 'pos' : ''}`}>
         {fmtBRL(variacaoTotal)}
+      </td>
+      <td className={`num ${margemNegativa ? 'neg' : ''}`}>
+        {item.perc_margem_item == null
+          ? '—'
+          : `${item.perc_margem_item.toFixed(1).replace('.', ',')}%`}
       </td>
     </tr>
   );
