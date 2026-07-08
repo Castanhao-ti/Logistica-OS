@@ -1,38 +1,23 @@
 import React from 'react';
-import { Truck, Settings, LifeBuoy, Users, LogOut, TicketPercent, Target } from 'lucide-react';
+import { LayoutDashboard, Truck, Settings, LifeBuoy, Users, TicketPercent, Target } from 'lucide-react';
 import BrandMark from './BrandMark';
 import type { SessionUser } from '../auth/auth';
 import { podeOperar } from '../descontos/descontos';
 import { podeVerCrm } from '../crm/crm';
 
-export type View = 'tms' | 'admin' | 'usuarios' | 'descontos' | 'crm';
-
-const PERFIL_LABELS: Record<SessionUser['perfil'], string> = {
-  admin: 'Admin',
-  vendas: 'Vendas',
-  logistica: 'Logística',
-  financeiro: 'Financeiro',
-  leitura: 'Leitura',
-};
+export type View = 'dashboard' | 'tms' | 'admin' | 'usuarios' | 'descontos' | 'crm';
 
 interface Props {
   view: View;
   onChange: (v: View) => void;
   pendingCount: number;
   user: SessionUser;
-  onLogout: () => void;
 }
 
-export default function Sidebar({ view, onChange, pendingCount, user, onLogout }: Props) {
+export default function Sidebar({ view, onChange, pendingCount, user }: Props) {
   const isAdmin   = user.perfil === 'admin';
   const verDescontos = podeOperar(user.perfil);
   const verCrm = podeVerCrm(user.perfil);
-  const initials = user.nome
-    .split(' ')
-    .map(n => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 
   return (
     <aside className="lsw-sidebar">
@@ -45,6 +30,13 @@ export default function Sidebar({ view, onChange, pendingCount, user, onLogout }
       </div>
 
       <nav className="lsw-sidebar__nav">
+        <button
+          className={`lsw-sidebar__nav-item ${view === 'dashboard' ? 'lsw-sidebar__nav-item--active' : ''}`}
+          onClick={() => onChange('dashboard')}
+        >
+          <LayoutDashboard size={18} />
+          <span>Dashboard</span>
+        </button>
         <button
           className={`lsw-sidebar__nav-item ${view === 'tms' ? 'lsw-sidebar__nav-item--active' : ''}`}
           onClick={() => onChange('tms')}
@@ -98,16 +90,6 @@ export default function Sidebar({ view, onChange, pendingCount, user, onLogout }
           <LifeBuoy size={16} />
           Suporte
         </button>
-        <div className="lsw-sidebar__user">
-          <div className="lsw-sidebar__avatar">{initials}</div>
-          <div className="lsw-sidebar__user-info">
-            <strong>{user.nome}</strong>
-            <span>{PERFIL_LABELS[user.perfil]}</span>
-          </div>
-          <button className="lsw-sidebar__logout" title="Sair" onClick={onLogout}>
-            <LogOut size={15} />
-          </button>
-        </div>
       </div>
     </aside>
   );

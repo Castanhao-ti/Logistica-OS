@@ -334,28 +334,6 @@ function PedidosTab({ user }: { user: SessionUser }) {
 
   return (
     <div className="dsc-tab-content">
-      {/* Sub-header */}
-      <div className="dsc-subheader">
-        <div className="dsc-subheader__title-area">
-          <h2 className="dsc-subheader__title">Pedidos com desconto</h2>
-          <p className="dsc-subheader__sub">
-            Análise e solicitação de aprovação.
-            {updatedAt && (
-              <span className="dsc-subheader__stamp"> · Atualizado {formatRelative(updatedAt)}</span>
-            )}
-          </p>
-        </div>
-        <button
-          className="dsc-icon-btn dsc-icon-btn--lg"
-          onClick={refresh}
-          disabled={refreshing}
-          title="Atualizar"
-          aria-label="Atualizar"
-        >
-          <RefreshCw size={16} className={refreshing ? 'dsc-spin' : ''} />
-        </button>
-      </div>
-
       {/* KPIs */}
       <div className="kpi-grid dsc-kpi-row">
         <KpiCard
@@ -363,27 +341,27 @@ function PedidosTab({ user }: { user: SessionUser }) {
           value={String(kpis.aguardando)}
           reference={`de ${baseFiltrada.length} no período`}
           icon={<Clock size={18} />}
-          iconColor="#F59E0B"
+          iconColor="#C2890C"
         />
         <KpiCard
           label="Valor em risco"
           value={fmtBRL(-kpis.valorEmRisco)}
           reference="desconto pendente"
           icon={<AlertTriangle size={18} />}
-          iconColor="#EF4444"
+          iconColor="#D05F02"
         />
         <KpiCard
           label="Aprovados hoje"
           value={String(kpis.aprovadosHoje)}
           icon={<CheckCircle2 size={18} />}
-          iconColor="#10B981"
+          iconColor="#2C7A4B"
         />
         <KpiCard
           label="Ticket médio"
           value={fmtBRL(kpis.ticketMedio)}
           reference={`${filtered.length} na seleção · ${fmtBRL(-descontoAcumulado)} desc.`}
           icon={<Receipt size={18} />}
-          iconColor="#2D4A3E"
+          iconColor="#2C503E"
         />
       </div>
 
@@ -453,6 +431,17 @@ function PedidosTab({ user }: { user: SessionUser }) {
         >
           <SlidersHorizontal size={14} />
           Mais filtros
+        </button>
+
+        <button
+          className="dsc-icon-btn dsc-icon-btn--lg"
+          style={{ marginLeft: 'auto' }}
+          onClick={refresh}
+          disabled={refreshing}
+          title={updatedAt ? `Atualizado ${formatRelative(updatedAt)}` : 'Atualizar'}
+          aria-label="Atualizar"
+        >
+          <RefreshCw size={16} className={refreshing ? 'dsc-spin' : ''} />
         </button>
       </div>
 
